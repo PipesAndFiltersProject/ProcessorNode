@@ -19,7 +19,8 @@ namespace OHARBase {
 	/** A class for logging data in the Nodes. Is implemented following
 	 the Singleton design pattern. The output stream can be changed by setStream() but
 	 is usually the console (std::cout).
-	 @todo Reimplement stream writing and formatting using C++11 paremetrisized templates. 
+	 @todo Reimplement stream writing and formatting using C++11 paremetrisized templates, to get rid of the pesky
+    .c_str() calls when using the Log class.
 	 @author Antti Juustila
 	 */
 	class Log {

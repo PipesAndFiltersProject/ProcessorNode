@@ -26,7 +26,9 @@ namespace OHARBase {
 	 Constructor to create the reader with host name. See the
 	 constructor of Networker class about handling the parameters.
 	 @param hostName the host to reading data, including port number. In practise,
-	 this should always be local host for reader, i.e. 127.0.0.1.
+	 this should always be local host for reader, i.e. 127.0.0.1 with port, eg. 127:0.0.1:2222.
+    @param obs The observer who gets notified of network events.
+    @param io_s The boost asio io service.
 	 */
 	NetworkReader::NetworkReader(const std::string & hostName,
 										  NetworkReaderObserver & obs,
@@ -46,6 +48,8 @@ namespace OHARBase {
 	 @param hostName the host to reading data. In practise,
 	 this should always be local host for reader, i.e. 127.0.0.1.
 	 @param portNumber The port to read data from.
+    @param obs The observer who gets notified of network events.
+    @param io_s The boost asio io service.
 	 */
 	NetworkReader::NetworkReader(const std::string & hostName,
 										  int portNumber,

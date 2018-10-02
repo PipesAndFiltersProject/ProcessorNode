@@ -23,6 +23,7 @@ namespace OHARBase {
 	 <li>Local address for receiving data: 127.0.0.1:1234</li>
 	 <li>Remote address to send data to: 130.231.99.123:3344</li>
 	 </ul>
+    @param io_s The boost asio io service.
 	 */
 	Networker::Networker(const std::string & hostName, boost::asio::io_service & io_s)
 	:	running(false)
@@ -42,6 +43,7 @@ namespace OHARBase {
 	 <li>Remote address to send data to: 130.231.99.123</li>
 	 </ul>
 	 @param portNumber The port number to listen to (when receiving) or send to (when sending).
+    @param io_s The boost asio io service.
 	 */
 	Networker::Networker(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
 	: host(hostName), port(portNumber), running(false)

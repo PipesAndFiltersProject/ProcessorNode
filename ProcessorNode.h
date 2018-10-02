@@ -56,8 +56,9 @@ namespace OHARBase {
 	 <ul>
 	 <li>NetworkReader object, waiting for data from other ProcessorNode</li>
 	 <li>NetworkWriter object, sending data to other ProcessorNode</li>
-	 <li>Several Handlers, which handle the data received from other ProcessorNodes, and/or creates and
+	 <li>Several DataHandler objects, which handle the data received from other ProcessorNodes, and/or creates and
 	 sends data to other ProcessorNodes, possibly reading and/or writing data to/from files also.</li>
+    <li>ProcessorNode configuration data, which is held in the NodeConfiguration member variable.</li>
 	 </ul>
 	 When implementing an application following this Pipes&Filters architecture, one usually has several
 	 Filters (a.k.a ProcessorNodes). Each filter application as a main() function, which instantiates one ProcessorNode and
@@ -115,7 +116,9 @@ namespace OHARBase {
 		 network reader's queue of incoming data packages. */
 		void threadFunc();
 		
+      /** There is no need to copy ProcessorNodes so delete copy constructor. */
 		ProcessorNode(const ProcessorNode &) = delete;
+      /** There is no need to copy ProcessorNodes so delete assignment operator. */
 		const ProcessorNode & operator = (const ProcessorNode &) = delete;
 		
 	protected:
@@ -135,9 +138,6 @@ namespace OHARBase {
 		
 		/** The name of the Node. */
 		std::string name;
-		/** The host name. */
-		//   std::string host;
-		//   int port;
 		
 		/** The reader for receiving data from the previous Node. May be null. */
 		NetworkReader * netInput;

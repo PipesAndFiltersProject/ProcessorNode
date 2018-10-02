@@ -27,7 +27,7 @@ namespace OHARBase {
 	 The initialization happens in the constructors (where the addresses are set) and in
 	 start() method.
 	 @author Antti Juustila
-	 @todo Update to using std lib networking classes, as well as IPv6.
+	 @todo Support for IPv6.
 	 */
 	class Networker {
 	public:

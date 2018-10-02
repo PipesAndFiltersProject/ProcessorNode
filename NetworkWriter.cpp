@@ -25,7 +25,7 @@ namespace OHARBase {
 	 Constructor to create the writer with host name. See the
 	 constructor of Networker class about handling the parameters.
 	 @param hostName the host to send data to, including port number.
-	 @param obs The observer who gets the notifications about data arrived.
+    @param io_s The boost asio io service.
 	 */
 	NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
 	: Networker(hostName,io_s), TAG("NetworkWriter"), io_service(io_s)
@@ -38,7 +38,7 @@ namespace OHARBase {
 	 constructor of Networker class about handling the parameters.
 	 @param hostName The host to send data to.
 	 @param portNumber The port to send data to.
-	 @param obs The observer who gets the notifications about data arrived.
+    @param io_s The boost asio io service.
 	 */
 	NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
 	: Networker(hostName, portNumber, io_s), TAG("NetworkWriter"), io_service(io_s)
@@ -127,8 +127,9 @@ namespace OHARBase {
 			socket->cancel();
 			socket->close();
 			condition.notify_all();
-			threader.join();
+         threader.join();
 		}
+      Log::getInstance().entry(TAG, "Exiting NetworkWriter::stop.");
 	}
 	
 	

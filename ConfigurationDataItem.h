@@ -14,6 +14,11 @@
 
 namespace OHARBase {
 
+   /**
+    This class defines the configuration data items a ProcessorNode uses to
+    configure itself. Configuration data items have a name and a value defining
+    the configuration.
+    */
 	class ConfigurationDataItem : public DataItem {
 
 	public:
@@ -33,7 +38,9 @@ namespace OHARBase {
 		virtual DataItem * copy() const override;
 		
 	private:
+      /** The name of the configuration item. */
 		std::string itemName;
+      /** The value of the configuration item. */
 		std::string itemValue;
 		
 		static const std::string TAG;

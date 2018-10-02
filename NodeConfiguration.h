@@ -16,6 +16,11 @@
 
 namespace OHARBase {
 
+   /**
+    This class holds the configuration data for a Node. Configuration
+    data is held in ConfigurationDataItem objects, which have a name-value -pairs
+    of configuration data.
+    */
 	class NodeConfiguration : public DataReaderObserver {
 		
 	public:

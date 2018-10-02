@@ -16,11 +16,21 @@ namespace OHARBase {
 
 	const std::string ConfigurationFileReader::TAG{"ConfigReader"};
 	
+   /**
+    Constructor for configuration file reader.
+    @param obs The observer who gets notifications of content read from the configuration file.
+    */
 	OHARBase::ConfigurationFileReader::ConfigurationFileReader(DataReaderObserver & obs)
 	: DataFileReader(obs) {
 		
 	}
 	
+   /**
+    Parses a line from the configuration file.
+    @param str An item from the configuration file.
+    @param contentType The type of the content in this item.
+    @returns The configuration data item read from the line. Null if failed to parse the configuration item.
+    */
 	OHARBase::DataItem * OHARBase::ConfigurationFileReader::parse(const std::string & str, const std::string & contentType) {
 		ConfigurationDataItem * item = nullptr;
 		if (str.length() > 0) {

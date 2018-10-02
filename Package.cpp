@@ -54,8 +54,8 @@ namespace OHARBase {
 	}
 	
 	/** A constructor giving type and data for the package. Uuid is generated.
-	 @param id The uuid for the package.
-	 @param data The data contents of the package. */
+	 @param ptype The type for the package.
+	 @param d The data contents of the package. */
 	Package::Package(Type ptype, const std::string & d)
 	: uid(boost::uuids::random_generator()()), type(ptype), data(d), dataItem(0)
 	{
@@ -64,7 +64,7 @@ namespace OHARBase {
 	/** A constructor giving several parameters for the package.
 	 @param id The uuid for the package.
 	 @param ptype The type of the data (control or data package).
-	 @param data The data contents of the package. */
+	 @param d The data contents of the package. */
 	Package::Package(const boost::uuids::uuid & id, Type ptype, const std::string & d)
 	: uid(id), type(ptype), data(d), dataItem(0)
 	{
