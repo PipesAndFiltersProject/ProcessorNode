@@ -22,7 +22,7 @@ namespace OHARBase {
 	/** Constructor for the processor node.
 	 @param aName The name of the processor node. */
 	ProcessorNode::ProcessorNode(const std::string & aName)
-	: name(aName), config(0), netInput(0), netOutput(0), running(false), hasIncoming(false), TAG("PNode")
+	: config(0), name(aName), netInput(0), netOutput(0), running(false), hasIncoming(false), TAG("PNode")
 	{
 		Log::getInstance().entry(TAG, "Creating ProcessorNode.");
 		handlers.push_back(new PingHandler(*this));
