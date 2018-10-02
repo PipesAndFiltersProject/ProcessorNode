@@ -26,7 +26,7 @@ namespace OHARBase {
 	public:
 		
 		NodeConfiguration() = default;
-		~NodeConfiguration();
+		virtual ~NodeConfiguration();
 		
 		virtual void handleNewItem(DataItem * item) override;
 		

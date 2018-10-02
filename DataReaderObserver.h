@@ -24,6 +24,7 @@ namespace OHARBase {
 		 to the observer.
 		 @param item The new data item object created, owned now by the observer. */
 		virtual void handleNewItem(DataItem * item) = 0;
+      virtual ~DataReaderObserver() { };
 	};
 	
 	

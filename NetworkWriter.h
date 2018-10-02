@@ -58,7 +58,6 @@ namespace OHARBase {
 		/** Logging tag. */
 		const std::string TAG;
 		
-		boost::asio::io_service & io_service;
 	};
 	
 }

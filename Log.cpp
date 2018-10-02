@@ -37,7 +37,7 @@ namespace OHARBase {
 	/** The hidden default constructor prevents instantiating from elsewhere
 	 than the getInstance() method. */
 	Log::Log()
-	: bufSize(1000), stream(&std::cout)
+	: stream(&std::cout), bufSize(1000)
 	{
 		buffer = new char[bufSize];
 		started = std::chrono::system_clock::now();
