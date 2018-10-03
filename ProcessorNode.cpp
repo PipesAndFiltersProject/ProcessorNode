@@ -207,7 +207,7 @@ namespace OHARBase {
 				std::cout << "Enter command > ";
 				getline(std::cin, command);
             condition.notify_all();
-				if (command == "shutdown") {
+				if (command == "quit") {
                return; // running = false;
 				}
 			}
@@ -233,7 +233,7 @@ namespace OHARBase {
                         p.setData(cmd);
                         passToHandlers(p);
                      }
-                  } else if (cmd == "shutdown") {
+                  } else if (cmd == "quit") {
                      p.setType(Package::Control);
                      p.setData(cmd);
                      sendData(p);
@@ -331,7 +331,7 @@ namespace OHARBase {
 					guard.unlock();
 					Log::getInstance().entry(TAG, "Received package %s : %s", package.getTypeAsString().c_str(), package.getData().c_str());
 					while (!package.isEmpty()) {
-						if (package.getType() == Package::Control && package.getData() == "shutdown") {
+						if (package.getType() == Package::Control && package.getData() == "quit") {
 							sendData(package);
 							std::this_thread::sleep_for(std::chrono::milliseconds(500));
 //							running = false;
