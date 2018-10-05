@@ -13,9 +13,8 @@
 #include <string>
 #include <chrono>
 
-
 namespace OHARBase {
-	
+   
 	/** A class for logging data in the Nodes. Is implemented following
 	 the Singleton design pattern. The output stream can be changed by setStream() but
 	 is usually the console (std::cout).
@@ -26,16 +25,25 @@ namespace OHARBase {
 	class Log {
 	public:
 		virtual ~Log();
-		static Log & getInstance();
+		static Log & get();
 		void setStream(std::ostream & os);
 		
+      template <typename T>
+      std::ostream & operator << (const T & msg) {
+         *stream << msg << " ";
+         return *stream;
+      }
+      
 		void entry(const std::string & tag, const char * format, ...);
-		
+
+      std::string getTimestamp();
+
 	private:
 		Log();
 		Log(const Log &) = delete;
 		Log & operator = (const Log&) = delete;
 		
+      
 	private:
 
 		/** The stream to log to. Can be changed during runtime. */
@@ -55,4 +63,5 @@ namespace OHARBase {
 	
 } //namespace
 
+#define LOG_ERROR(Tag, Message) { Log::get() << Log::get().getTimestamp() << " " << " " << "ERROR" << Message << std::endl; }
 #endif /* defined(__PipesAndFiltersFramework__Log__) */

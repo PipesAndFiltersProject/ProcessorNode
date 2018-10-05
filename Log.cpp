@@ -9,12 +9,13 @@
 #include <cstdio>
 #include <chrono>
 #include <iomanip>
+#include <sstream>
 
 #include "Log.h"
 
 namespace OHARBase {
-	
-	
+
+   
 	/** Destructor deallocates the char buffer used in logging. */
 	Log::~Log() {
 		delete [] buffer;
@@ -22,9 +23,10 @@ namespace OHARBase {
 	
 	/** The class method for retrieving the single instance of the logger.
 	 @return The singleton logger object. */
-	Log & Log::getInstance() {
+	Log & Log::get() {
 		static Log logInstance;
 		return logInstance;
+      
 	}
 	
 	/** Use this method to set the output stream of the logger.
@@ -43,6 +45,15 @@ namespace OHARBase {
 		started = std::chrono::system_clock::now();
 	}
 	
+   std::string Log::getTimestamp() {
+      std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+      
+      std::stringstream s;
+      s << std::setw(10) << std::chrono::duration_cast<std::chrono::milliseconds>(now - started).count();
+      return s.str();
+   }
+   
+   
 	/** The actual logging method. Use the common printf formatting.
 	 @param tag The tag to use in logging, usually indicates who is logging (class, component,...).
 	 @param format The character string containing text and format characters.
@@ -61,7 +72,5 @@ namespace OHARBase {
 		
 		guard.unlock();
 	}
-	
-	
 	
 }	// namespace

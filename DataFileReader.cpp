@@ -37,10 +37,10 @@ namespace OHARBase {
 	 @return Returns true if file was successfully handled, false if file couldn't be opened.
 	 */
 	bool DataFileReader::read(const std::string &fileName) {
-		Log::getInstance().entry(TAG, "Starting to handle the file %s", fileName.c_str());
+		Log::get().entry(TAG, "Starting to handle the file %s", fileName.c_str());
 		std::ifstream file(fileName, std::ifstream::in);
 		if (!file.is_open()) {
-			Log::getInstance().entry(TAG, "Could not open the file!!");
+			Log::get().entry(TAG, "Could not open the file!!");
 			return false;
 		}
 		std::string str;
@@ -48,7 +48,7 @@ namespace OHARBase {
 		std::getline(file, contentType);
 		do {
 			std::getline(file, str);
-			Log::getInstance().entry(TAG, "Read line: %s", str.c_str());
+			Log::get().entry(TAG, "Read line: %s", str.c_str());
 			if (file.good() && str.length() > 0) {
 				DataItem * item = parse(str, contentType);
 				if (item) {

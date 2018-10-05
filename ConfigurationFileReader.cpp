@@ -34,10 +34,10 @@ namespace OHARBase {
 	OHARBase::DataItem * OHARBase::ConfigurationFileReader::parse(const std::string & str, const std::string & contentType) {
 		ConfigurationDataItem * item = nullptr;
 		if (str.length() > 0) {
-			Log::getInstance().entry(TAG, "Parsing line: %s", str.c_str());
+         Log::get() << TAG << "Parsing line: %s" << str << std::endl;
 			item = new ConfigurationDataItem();
 			if (!item->parse(str, contentType)) {
-				Log::getInstance().entry(TAG, "Configuration failed to parse!");
+            Log::get() << TAG << "Configuration failed to parse!" << std::endl;
 				delete item;
 				item = 0;
 			}
