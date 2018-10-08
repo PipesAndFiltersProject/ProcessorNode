@@ -16,8 +16,8 @@
 
 #include <boost/asio.hpp>
 
-#include "NetworkReaderObserver.h"
-#include "Package.h"
+#include <OHARBaseLayer/NetworkReaderObserver.h>
+#include <OHARBaseLayer/Package.h>
 
 
 

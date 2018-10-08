@@ -12,8 +12,8 @@
 #include <queue>
 #include <condition_variable>
 
-#include "Networker.h"
-#include "Package.h"
+#include <OHARBaseLayer/Networker.h>
+#include <OHARBaseLayer/Package.h>
 
 namespace OHARBase {
 	

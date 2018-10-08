@@ -10,9 +10,9 @@
 #include <boost/algorithm/string.hpp>
 #include <vector>
 
-#include "Package.h"
-#include "Log.h"
-#include "DataItem.h"
+#include <OHARBaseLayer/Package.h>
+#include <OHARBaseLayer/Log.h>
+#include <OHARBaseLayer/DataItem.h>
 
 
 namespace OHARBase {

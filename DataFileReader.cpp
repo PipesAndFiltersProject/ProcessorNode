@@ -8,9 +8,9 @@
 
 #include <fstream>
 
-#include "DataFileReader.h"
-#include "DataReaderObserver.h"
-#include "Log.h"
+#include <OHARBaseLayer/DataFileReader.h>
+#include <OHARBaseLayer/DataReaderObserver.h>
+#include <OHARBaseLayer/Log.h>
 
 
 namespace OHARBase {

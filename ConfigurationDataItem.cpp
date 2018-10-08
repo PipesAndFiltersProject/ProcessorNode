@@ -10,8 +10,8 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
-#include "Log.h"
-#include "ConfigurationDataItem.h"
+#include <OHARBaseLayer/Log.h>
+#include <OHARBaseLayer/ConfigurationDataItem.h>
 
 namespace OHARBase {
 

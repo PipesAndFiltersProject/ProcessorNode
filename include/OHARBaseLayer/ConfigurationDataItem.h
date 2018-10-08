@@ -10,7 +10,7 @@
 #define ConfigurationDataItem_h
 
 
-#include "DataItem.h"
+#include <OHARBaseLayer/DataItem.h>
 
 namespace OHARBase {
 

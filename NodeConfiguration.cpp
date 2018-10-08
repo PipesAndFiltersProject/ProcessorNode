@@ -6,7 +6,7 @@
 //  Copyright © 2016 Antti Juustila. All rights reserved.
 //
 
-#include "NodeConfiguration.h"
+#include <OHARBaseLayer/NodeConfiguration.h>
 
 namespace OHARBase {
 	

@@ -16,8 +16,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 
-#include "NetworkWriter.h"
-#include "Log.h"
+#include <OHARBaseLayer/NetworkWriter.h>
+#include <OHARBaseLayer/Log.h>
 
 namespace OHARBase {
 	

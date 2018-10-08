@@ -16,9 +16,9 @@
 #include <boost/shared_ptr.hpp>
 
 
-#include "NetworkReader.h"
-#include "NetworkReaderObserver.h"
-#include "Log.h"
+#include <OHARBaseLayer/NetworkReader.h>
+#include <OHARBaseLayer/NetworkReaderObserver.h>
+#include <OHARBaseLayer/Log.h>
 
 namespace OHARBase {
 	

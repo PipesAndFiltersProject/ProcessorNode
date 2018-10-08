@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#include "DataItem.h"
+#include <OHARBaseLayer/DataItem.h>
 
 namespace OHARBase {
 	

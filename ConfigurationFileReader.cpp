@@ -8,9 +8,9 @@
 
 #include <stdio.h>
 
-#include "ConfigurationFileReader.h"
-#include "ConfigurationDataItem.h"
-#include "Log.h"
+#include <OHARBaseLayer/ConfigurationFileReader.h>
+#include <OHARBaseLayer/ConfigurationDataItem.h>
+#include <OHARBaseLayer/Log.h>
 
 namespace OHARBase {
 

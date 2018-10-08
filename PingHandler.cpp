@@ -6,10 +6,10 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#include "PingHandler.h"
-#include "ProcessorNode.h"
-#include "Log.h"
-#include "Package.h"
+#include <OHARBaseLayer/PingHandler.h>
+#include <OHARBaseLayer/ProcessorNode.h>
+#include <OHARBaseLayer/Log.h>
+#include <OHARBaseLayer/Package.h>
 
 namespace OHARBase {
 	

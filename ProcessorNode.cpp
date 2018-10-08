@@ -8,14 +8,14 @@
 
 #include <sstream>
 
-#include "ProcessorNode.h"
-#include "NetworkReader.h"
-#include "NetworkWriter.h"
-#include "PingHandler.h"
-#include "DataFileReader.h"
-#include "Log.h"
-#include "NodeConfiguration.h"
-#include "ConfigurationFileReader.h"
+#include <OHARBaseLayer/ProcessorNode.h>
+#include <OHARBaseLayer/NetworkReader.h>
+#include <OHARBaseLayer/NetworkWriter.h>
+#include <OHARBaseLayer/PingHandler.h>
+#include <OHARBaseLayer/DataFileReader.h>
+#include <OHARBaseLayer/Log.h>
+#include <OHARBaseLayer/NodeConfiguration.h>
+#include <OHARBaseLayer/ConfigurationFileReader.h>
 
 namespace OHARBase {
 	
