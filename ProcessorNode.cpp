@@ -336,6 +336,7 @@ namespace OHARBase {
 						if (package.getType() == Package::Control && package.getData() == "shutdown") {
 							sendData(package);
 							std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                     // TODO check if code in comments (modified?) would work without sig abort 6, as stop() does cause it.
 //							running = false;
 //							condition.notify_all();
 //							break;
