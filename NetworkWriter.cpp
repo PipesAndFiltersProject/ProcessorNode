@@ -75,10 +75,11 @@ namespace OHARBase {
 					currentlySending += Package::separator() + p.getData();
 					LOG_INFO(TAG, "Sending: " << currentlySending);
 					msgQueue.pop();
+               LOG_INFO(TAG, "Just popped, next unlock");
 					guard.unlock();
-
+               LOG_INFO(TAG, "Determining destination address for " << host << ":" << port);
 					boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(host), port);
-
+               LOG_INFO(TAG, "Creating message...");
 					boost::shared_ptr<std::string> message(new std::string(currentlySending));
                LOG_INFO(TAG, "Now sending through socket " << destination.address().to_string() << ":" << destination.port());
 					socket->async_send_to(boost::asio::buffer(*message), destination,
