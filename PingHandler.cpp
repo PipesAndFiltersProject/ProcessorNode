@@ -36,7 +36,7 @@ namespace OHARBase {
 	 */
 	bool PingHandler::consume(Package & data) {
 		if (data.getType() == Package::Control && data.getData() == "ping") {
-         Log::get().entry(TAG, "** PING received, forwarding to next node! **");
+         LOG_INFO(TAG, "** PING received, forwarding to next node! **");
 			node.sendData(data);
 			return true;
 		}

@@ -34,8 +34,6 @@ namespace OHARBase {
          return *stream;
       }
       
-		void entry(const std::string & tag, const char * format, ...);
-
       std::string getTimestamp();
 
 	private:

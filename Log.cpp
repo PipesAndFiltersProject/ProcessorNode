@@ -53,24 +53,5 @@ namespace OHARBase {
       return s.str();
    }
    
-   
-	/** The actual logging method. Use the common printf formatting.
-	 @param tag The tag to use in logging, usually indicates who is logging (class, component,...).
-	 @param format The character string containing text and format characters.
-	 @param ... The parameters to the formatting string. */
-	void Log::entry(const std::string & tag, const char * format, ...) {
-		guard.lock();
-		va_list argptr;
-		va_start(argptr, format);
-		vsnprintf(buffer, bufSize, format, argptr);
-		va_end(argptr);
-		
-		std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-		
-		*stream << std::setw(10) << std::chrono::duration_cast<std::chrono::milliseconds>(now - started).count();
-		*stream << " " << tag << " " << buffer << std::endl;
-		
-		guard.unlock();
-	}
-	
+   	
 }	// namespace
