@@ -68,7 +68,7 @@ namespace OHARBase {
 	bool ConfigurationDataItem::parse(const std::string & fromString, const std::string & contentType) {
 		std::vector<std::string> strings;
 		boost::split(strings, fromString, boost::is_any_of("\t"));
-      Log::get() << TAG << "String item count: " << strings.size() << std::endl;
+      LOG_INFO(TAG, "String item count: " << strings.size());
 		if (contentType == "nodeconfiguration" && strings.size() == 2) {
 			setItemName(strings.at(0));
 			setItemValue(strings.at(1));

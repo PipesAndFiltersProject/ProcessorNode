@@ -24,7 +24,7 @@ namespace OHARBase {
 	ProcessorNode::ProcessorNode(const std::string & aName)
 	: config(0), name(aName), netInput(0), netOutput(0), running(false), hasIncoming(false), TAG("PNode")
 	{
-		Log::get().entry(TAG, "Creating ProcessorNode.");
+		LOG_INFO(TAG, "Creating ProcessorNode.");
 		handlers.push_back(new PingHandler(*this));
 	}
 	
@@ -33,7 +33,7 @@ namespace OHARBase {
       
       //TODO: should call stop instead, then here destroy the objects?
       
-		Log::get().entry(TAG, "Destroying ProcessorNode.");
+		LOG_INFO(TAG, "Destroying ProcessorNode.");
 		while (!handlers.empty()) {
 			delete handlers.front();
 			handlers.pop_front();
@@ -50,7 +50,7 @@ namespace OHARBase {
 				netInput->stop();
 			delete netInput;
 		}
-		Log::get().entry(TAG, "Destroyed ProcessorNode.");
+		LOG_INFO(TAG, "Destroyed ProcessorNode.");
 	}
 	
 	
@@ -82,7 +82,7 @@ namespace OHARBase {
 			netInput = nullptr;
 		}
 		if (hostName.length() && hostName != "null") {
-			Log::get().entry(TAG, "Setting input: %s", hostName.c_str());
+			LOG_INFO(TAG, "Setting input: " << hostName);
 			netInput = new NetworkReader(hostName, *this, io_service);
 		}
 	}
@@ -97,7 +97,7 @@ namespace OHARBase {
 			netOutput = nullptr;
 		}
 		if (hostName.length() && hostName != "null") {
-			Log::get().entry(TAG, "Setting output: %s", hostName.c_str());
+			LOG_INFO(TAG, "Setting output: " << hostName);
 			netOutput = new NetworkWriter(hostName, io_service);
 		}
 	}
@@ -114,7 +114,7 @@ namespace OHARBase {
 			netInput = nullptr;
 		}
 		if (hostName.length() && hostName != "null") {
-			Log::get().entry(TAG, "Setting input: %s:%d", hostName.c_str(), portNumber);
+         LOG_INFO(TAG, "Setting input: " << hostName << ":" << portNumber);
 			netInput = new NetworkReader(hostName, portNumber, *this, io_service);
 		}
 	}
@@ -130,7 +130,7 @@ namespace OHARBase {
 			netOutput = nullptr;
 		}
 		if (hostName.length() && hostName != "null") {
-			Log::get().entry(TAG, "Setting output: %s:%d", hostName.c_str(), portNumber);
+         LOG_INFO(TAG, "Setting output: " << hostName << ":" << portNumber);
 			netOutput = new NetworkWriter(hostName, portNumber, io_service);
 		}
 	}
@@ -186,15 +186,15 @@ namespace OHARBase {
 	void ProcessorNode::start() {
 		// Start the listening network reader
 		if (netInput) {
-			Log::get().entry(TAG, "Start the input reader");
+			LOG_INFO(TAG, "Start the input reader");
 			netInput->start();
 		}
 		// Start the sending network object
 		if (netOutput) {
-			Log::get().entry(TAG, "Start the output writer");
+			LOG_INFO(TAG, "Start the output writer");
 			netOutput->start();
 		}
-		Log::get().entry(TAG, "Start the receive handler thread...");
+		LOG_INFO(TAG, "Start the receive handler thread...");
 		running = true;
       if (netInput) {
          threader = std::thread(&ProcessorNode::threadFunc, this);
@@ -228,7 +228,7 @@ namespace OHARBase {
                      sendData(p);
                   } else if (cmd == "readfile") {
                      if (dataFileName.length() > 0) {
-                        Log::get().entry(TAG, "Reading data file.. %s", dataFileName.c_str());
+                        LOG_INFO(TAG, "Reading data file.. " << dataFileName);
                         p.setType(Package::Control);
                         p.setData(cmd);
                         passToHandlers(p);
@@ -254,21 +254,21 @@ namespace OHARBase {
 	 as well as the main thread loop running in the start() method. */
 	void ProcessorNode::stop() {
 		running = false;
-      Log::get().entry(TAG, "Stopping input...");
+      LOG_INFO(TAG, "Stopping input...");
 		if (netInput) {
 			netInput->stop();
 		}
-      Log::get().entry(TAG, "Stopped input, now stopping output...");
+      LOG_INFO(TAG, "Stopped input, now stopping output...");
 		// Close and destroy the sending network object
 		if (netOutput) {
 			netOutput->stop();
 		}
-      Log::get().entry(TAG, "Stopped output, stopping io service...");
+      LOG_INFO(TAG, "Stopped output, stopping io service...");
 		io_service.stop();
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-      Log::get().entry(TAG, "Notify all");
+      LOG_INFO(TAG, "Notify all");
 		condition.notify_all();
-      Log::get().entry(TAG, "...exiting ProcessorNode::stop");
+      LOG_INFO(TAG, "...exiting ProcessorNode::stop");
 	}
 	
 	
@@ -293,16 +293,16 @@ namespace OHARBase {
 	void ProcessorNode::passToNextHandlers(const DataHandler * current, Package & package) {
 		bool found = false;
 		for (std::list<DataHandler*>::iterator iter = handlers.begin(); iter != handlers.end(); iter++) {
-			Log::get().entry(TAG, "Offering data to next Handler...");
+			LOG_INFO(TAG, "Offering data to next Handler...");
 			if (!found && current == *iter) {
 				found = true;
-				Log::get().entry(TAG, "Found current handler....");
+				LOG_INFO(TAG, "Found current handler....");
 				continue;
 			}
 			if (found) {
-				Log::get().entry(TAG, "..so offering the package to the rest.");
+				LOG_INFO(TAG, "..so offering the package to the rest.");
 				if ((*iter)->consume(package)) {
-					Log::get().entry(TAG, "Consumer returned true, not offering forward anymore");
+					LOG_INFO(TAG, "Consumer returned true, not offering forward anymore");
 					break;
 				}
 			}
@@ -318,7 +318,7 @@ namespace OHARBase {
 	 */
 	void ProcessorNode::threadFunc() {
 		while (running) {
-			Log::get().entry(TAG, "Receive queue empty, waiting...");
+			LOG_INFO(TAG, "Receive queue empty, waiting...");
 
 			{
 				std::unique_lock<std::mutex> ulock(guard);
@@ -326,12 +326,12 @@ namespace OHARBase {
 			}
 			
 			if (running) {
-				Log::get().entry(TAG, "Received data!");
+				LOG_INFO(TAG, "Received data!");
 				if (netInput) {
 					guard.lock();
 					Package package = netInput->read();
 					guard.unlock();
-					Log::get().entry(TAG, "Received package %s : %s", package.getTypeAsString().c_str(), package.getData().c_str());
+               LOG_INFO(TAG, "Received package: " << package.getTypeAsString() << ":" << package.getData());
 					while (!package.isEmpty()) {
 						if (package.getType() == Package::Control && package.getData() == "shutdown") {
 							sendData(package);
@@ -351,7 +351,7 @@ namespace OHARBase {
 				hasIncoming = false;
 			}
 		}
-		Log::get().entry(TAG, "Exit thread in ProcessorNode!");
+		LOG_INFO(TAG, "Exit thread in ProcessorNode!");
 	}
 	
 	/** This method takes the incoming data and passes it to be handled by the
@@ -361,11 +361,11 @@ namespace OHARBase {
 	 enabling multiple handlers for a single package.
 	 @param package The data package to handle. */
 	void ProcessorNode::passToHandlers(Package & package) {
-		Log::get().entry(TAG, "Handlers count: %d", handlers.size());
+		LOG_INFO(TAG, "Handlers count: " << handlers.size());
 		for (std::list<DataHandler*>::iterator iter = handlers.begin(); iter != handlers.end(); iter++) {
-			Log::get().entry(TAG, "Offering data to next Handler...");
+			LOG_INFO(TAG, "Offering data to next Handler...");
 			if ((*iter)->consume(package)) {
-				Log::get().entry(TAG, "Consumer returned true, not offering forward anymore");
+				LOG_INFO(TAG, "Handler returned true, not offering forward anymore");
 				break;
 			}
 		}
@@ -378,7 +378,7 @@ namespace OHARBase {
 	 data handling thread (running the threadFunc()) which executes and handles the incoming
 	 data. */
 	void ProcessorNode::receivedData() {
-		Log::get().entry(TAG, "Processor has incoming!");
+		LOG_INFO(TAG, "Processor has incoming data!");
 		hasIncoming = true;
 		condition.notify_all();
 	}

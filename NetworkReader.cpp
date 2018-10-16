@@ -37,7 +37,7 @@ namespace OHARBase {
 			observer(obs),
 			TAG("NetworkReader")
 	{
-        using namespace boost::asio::ip;
+      using namespace boost::asio::ip;
 		remote_endpoint = std::unique_ptr<udp::endpoint>(new boost::asio::ip::udp::endpoint(udp::v4(), port));
 		socket = std::unique_ptr<udp::socket>(new udp::socket(io_s, *remote_endpoint));
 	}
@@ -59,7 +59,7 @@ namespace OHARBase {
 			observer(obs),
 			TAG("NetworkReader")
 	{
-        using namespace boost::asio::ip;
+      using namespace boost::asio::ip;
 		remote_endpoint = std::unique_ptr<udp::endpoint>(new udp::endpoint(udp::v4(), port));
 		socket = std::unique_ptr<udp::socket>(new udp::socket(io_s, *remote_endpoint));
 	}
@@ -72,10 +72,10 @@ namespace OHARBase {
 	/** Starts the reader. If necessary, connects to the endpoint and then does
 	 asynchronous read. */
 	void NetworkReader::start() {
-		Log::get().entry(TAG, "Start reading for data...");
+		LOG_INFO(TAG, "Start reading for data...");
 		running = true;
 		if (!socket->is_open()) {
-			Log::get().entry(TAG, "Opening read socket");
+			LOG_INFO(TAG, "Opening read socket");
 			socket->connect(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port));
 		}
 		buffer->fill(0);
@@ -85,7 +85,7 @@ namespace OHARBase {
 															boost::asio::placeholders::error,
 															boost::asio::placeholders::bytes_transferred));
 		
-		Log::get().entry(TAG, "Async recv ongoing");
+		LOG_INFO(TAG, "Async recv ongoing");
 	}
 	
 	/** Handles the incoming data and possible errors. Places finally another read
@@ -93,14 +93,14 @@ namespace OHARBase {
 	 @param error Error code
 	 @param bytes_transferred How many bytes came in. */
 	void NetworkReader::handleReceive(const boost::system::error_code & error, std::size_t bytes_transferred) {
-		Log::get().entry(TAG, "Async recv finished code: %d %s", error.value(), error.message().c_str());
+		LOG_INFO(TAG, "Async recv finished code: " << error.value() << " " << error.message());
 		if (!error || error == boost::asio::error::message_size)
 		{
 			if (buffer->data()) {
 				std::string buf;
 				buf.resize(bytes_transferred);
 				buf.assign(buffer->begin(), bytes_transferred);
-				Log::get().entry(TAG, "Received %d bytes data: %s", bytes_transferred, buf.c_str());
+            LOG_INFO(TAG, "Received " << bytes_transferred << " bytes of data: " << buf);
 				if (buf.length()>0) {
 					Package p;
 					if (p.parse(buf)) {
@@ -112,7 +112,7 @@ namespace OHARBase {
 					}
 				}
 			} else {
-				Log::get().entry(TAG, "Async recv finished but NO data");
+				LOG_INFO(TAG, "Async recv finished but NO data");
 			}
 			if (running)
 			{
@@ -124,10 +124,10 @@ namespace OHARBase {
 	/** Stops the reader by setting the running flag to false, effectively ending the thread
 	 loop in the threadFunc(). */
 	void NetworkReader::stop() {
-		Log::get().entry(TAG, "Stop the reader...");
+		LOG_INFO(TAG, "Stop the reader...");
 		if (running) {
 			running = false;
-			Log::get().entry(TAG, "Shutting down the socket.");
+			LOG_INFO(TAG, "Shutting down the socket.");
 			socket->cancel();
 			socket->close();
 		}
@@ -139,7 +139,7 @@ namespace OHARBase {
 	 @return The Package containing the data received from the previous ProcessorNode.
 	 */
 	Package NetworkReader::read() {
-		Log::get().entry(TAG, "Getting results from reader");
+		LOG_INFO(TAG, "Getting results from reader");
 		guard.lock();
 		Package result;
 		if (!msgQueue.empty()) {

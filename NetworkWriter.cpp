@@ -63,44 +63,44 @@ namespace OHARBase {
 	 */
 	void NetworkWriter::threadFunc() {
 		if (host.length() > 0 && port > 0) {
-			Log::get().entry(TAG, "Starting the write loop.");
+			LOG_INFO(TAG, "Starting the write loop.");
 			while (running) {
 				guard.lock();
 				if (!msgQueue.empty()) {
-					Log::get().entry(TAG, "Stuff in send queue!");
+					LOG_INFO(TAG, "Stuff in send queue!");
 					Package p = msgQueue.front();
 					const boost::uuids::uuid & uid = p.getUuid();
 					currentlySending = boost::uuids::to_string(uid);
 					currentlySending += Package::separator() + p.getTypeAsString();
 					currentlySending += Package::separator() + p.getData();
-					Log::get().entry(TAG, "Sending: %s", currentlySending.c_str());
+					LOG_INFO(TAG, "Sending: " << currentlySending);
 					msgQueue.pop();
 					guard.unlock();
 
 					boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(host), port);
 
 					boost::shared_ptr<std::string> message(new std::string(currentlySending));
-					Log::get().entry(TAG, "Now sending through socket %s:%d", destination.address().to_string().c_str(), destination.port());
+               LOG_INFO(TAG, "Now sending through socket " << destination.address().to_string() << ":" << destination.port());
 					socket->async_send_to(boost::asio::buffer(*message), destination,
 												 boost::bind(&NetworkWriter::handleSend, this,
 																 boost::asio::placeholders::error,
 																 boost::asio::placeholders::bytes_transferred));
-					Log::get().entry(TAG, "Async send delivered");
+					LOG_INFO(TAG, "Async send delivered");
 				} else {
 					guard.unlock();
-					Log::get().entry(TAG, "Send queue empty, waiting...");
+					LOG_INFO(TAG, "Send queue empty, waiting...");
 					std::unique_lock<std::mutex> ulock(guard);
 					condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
 				}
 			}
-			Log::get().entry(TAG, "Shutting down the socket.");
+			LOG_INFO(TAG, "Shutting down the socket.");
 		}
 	}
 	
 	void NetworkWriter::handleSend(const boost::system::error_code& error,
 						  std::size_t bytes_transferred)
 	{
-		Log::get().entry(TAG, "..and sent through socket; code: %d bytes: %d!", error.value(), bytes_transferred);
+		LOG_INFO(TAG, "..and sent through socket with code: " << error.value() << " bytes: " << bytes_transferred);
 	}
 	
 	/**
@@ -121,7 +121,7 @@ namespace OHARBase {
 	
 	/** Stops the writer. In practise this ends the loop in the send thread. */
 	void NetworkWriter::stop() {
-		Log::get().entry(TAG, "In NetworkWriter::stop.");
+		LOG_INFO(TAG, "In NetworkWriter::stop.");
 		if (running) {
 			running = false;
 			socket->cancel();
@@ -129,7 +129,7 @@ namespace OHARBase {
 			condition.notify_all();
          threader.join();
 		}
-      Log::get().entry(TAG, "Exiting NetworkWriter::stop.");
+      LOG_INFO(TAG, "Exiting NetworkWriter::stop.");
 	}
 	
 	
@@ -140,6 +140,7 @@ namespace OHARBase {
 	 */
 	void NetworkWriter::write(const Package & data)
 	{
+      LOG_INFO(TAG, "Putting data to writer's message queue.");
 		guard.lock();
 		msgQueue.push(data);
 		guard.unlock();

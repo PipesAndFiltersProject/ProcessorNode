@@ -63,5 +63,8 @@ namespace OHARBase {
 	
 } //namespace
 
-#define LOG_ERROR(Tag, Message) { Log::get() << Log::get().getTimestamp() << " " << " " << "ERROR" << Message << std::endl; }
+#define LOG_ERROR(Tag, Message) { OHARBase::Log::get() << OHARBase::Log::get().getTimestamp() << " " << Tag << " ERROR " << Message << " location: " << __PRETTY_FUNCTION__ << std::endl; }
+
+#define LOG_INFO(Tag, Message) { OHARBase::Log::get() << OHARBase::Log::get().getTimestamp() << " " << Tag << " " << Message << std::endl; }
+
 #endif /* defined(__PipesAndFiltersFramework__Log__) */
