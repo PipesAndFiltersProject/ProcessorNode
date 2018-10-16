@@ -326,7 +326,7 @@ namespace OHARBase {
 			}
 			
 			if (running) {
-				LOG_INFO(TAG, "Received data!");
+				LOG_INFO(TAG, "Received a package!");
 				if (netInput) {
 					guard.lock();
 					Package package = netInput->read();

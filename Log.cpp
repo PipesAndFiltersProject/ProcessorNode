@@ -53,5 +53,20 @@ namespace OHARBase {
       return s.str();
    }
    
+   
+   Log & Log::info(const std::string & TAG) {
+      Log::get().lock();
+      Log::get() << Log::get().getTimestamp() << " " << TAG;
+      Log::get().unlock();
+      return Log::get();
+   }
+   
+   void Log::lock() {
+      
+   }
+   
+   void Log::unlock() {
+      
+   }
    	
 }	// namespace

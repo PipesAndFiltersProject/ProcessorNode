@@ -34,6 +34,8 @@ namespace OHARBase {
          return *stream;
       }
       
+      static Log & info(const std::string & TAG);
+      
       std::string getTimestamp();
 
 	private:
@@ -41,6 +43,8 @@ namespace OHARBase {
 		Log(const Log &) = delete;
 		Log & operator = (const Log&) = delete;
 		
+      void lock();
+      void unlock();
       
 	private:
 
@@ -53,7 +57,7 @@ namespace OHARBase {
 		/** Guard to access the entry to the logging. Needed because multiple threads
 		 may try to log at the same time, garbling the output string. Only one thread at a
 		 time may construct the log buffer and print the buffer to the stream. */
-		std::mutex guard;
+      std::mutex guard;
 		/** For putting timestamps in the log output. */
 		std::chrono::system_clock::time_point started;
 	};
