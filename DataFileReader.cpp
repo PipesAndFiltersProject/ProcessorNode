@@ -8,14 +8,17 @@
 
 #include <fstream>
 
+#include <g3log/g3log.hpp>
+
 #include <OHARBaseLayer/DataFileReader.h>
 #include <OHARBaseLayer/DataReaderObserver.h>
-#include <OHARBaseLayer/Log.h>
+
+
 
 
 namespace OHARBase {
 	
-	const std::string DataFileReader::TAG = "FileReader";
+	const std::string DataFileReader::TAG = "FileReader ";
 	
 	/** Constructor for the reader, providing the compulsory observer who
 	 gets notified of new DataItem objects created when reading and parsing the file.
@@ -37,10 +40,10 @@ namespace OHARBase {
 	 @return Returns true if file was successfully handled, false if file couldn't be opened.
 	 */
 	bool DataFileReader::read(const std::string &fileName) {
-		LOG_INFO(TAG, "Starting to handle the file " << fileName);
+		LOG(INFO) << TAG << "Starting to handle the file " << fileName;
 		std::ifstream file(fileName, std::ifstream::in);
 		if (!file.is_open()) {
-			LOG_INFO(TAG, "Could not open the file!!");
+			LOG(WARNING) << TAG << "Could not open the file!!";
 			return false;
 		}
 		std::string str;
@@ -48,7 +51,7 @@ namespace OHARBase {
 		std::getline(file, contentType);
 		do {
 			std::getline(file, str);
-			LOG_INFO(TAG, "Read line: " << str);
+			LOG(INFO) << TAG << "Read line: " << str;
 			if (file.good() && str.length() > 0) {
 				DataItem * item = parse(str, contentType);
 				if (item) {
@@ -57,6 +60,7 @@ namespace OHARBase {
 			}
 		} while (file.good());
 		file.close();
+      LOG(INFO) << TAG << "File read finished.";
 		return true;
 	}
 	

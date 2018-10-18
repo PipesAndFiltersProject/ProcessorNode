@@ -11,7 +11,6 @@
 #include <vector>
 
 #include <OHARBaseLayer/Package.h>
-#include <OHARBaseLayer/Log.h>
 #include <OHARBaseLayer/DataItem.h>
 
 

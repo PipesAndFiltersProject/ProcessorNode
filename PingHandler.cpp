@@ -6,9 +6,10 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
+#include <g3log/g3log.hpp>
+
 #include <OHARBaseLayer/PingHandler.h>
 #include <OHARBaseLayer/ProcessorNode.h>
-#include <OHARBaseLayer/Log.h>
 #include <OHARBaseLayer/Package.h>
 
 namespace OHARBase {
@@ -19,7 +20,7 @@ namespace OHARBase {
 	 @param myNode The processor node to use to forward the ping message.
 	 */
 	PingHandler::PingHandler(ProcessorNode & myNode)
-	: node(myNode), TAG("PingHandler")
+	: node(myNode), TAG("PingHandler ")
 	{
 	}
 	
@@ -36,7 +37,7 @@ namespace OHARBase {
 	 */
 	bool PingHandler::consume(Package & data) {
 		if (data.getType() == Package::Control && data.getData() == "ping") {
-         LOG_INFO(TAG, "** PING received, forwarding to next node! **");
+         LOG(INFO) << TAG << "***** PING received, forwarding to next node! *****";
 			node.sendData(data);
 			return true;
 		}

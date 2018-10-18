@@ -105,6 +105,8 @@ namespace OHARBase {
 		void sendData(const Package & data);
 		
 		void passToNextHandlers(const DataHandler * current, Package & data);
+      
+      void showUIMessage(const std::string & message);
 		
 	protected:
 		

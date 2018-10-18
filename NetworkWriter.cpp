@@ -16,8 +16,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 
+#include <g3log/g3log.hpp>
+
 #include <OHARBaseLayer/NetworkWriter.h>
-#include <OHARBaseLayer/Log.h>
+
 
 namespace OHARBase {
 	
@@ -28,7 +30,7 @@ namespace OHARBase {
     @param io_s The boost asio io service.
 	 */
 	NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
-	: Networker(hostName,io_s), TAG("NetworkWriter")
+	: Networker(hostName,io_s), TAG("NetWriter ")
 	{
 		socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
 	}
@@ -41,7 +43,7 @@ namespace OHARBase {
     @param io_s The boost asio io service.
 	 */
 	NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-	: Networker(hostName, portNumber, io_s), TAG("NetworkWriter")
+	: Networker(hostName, portNumber, io_s), TAG("NetWriter ")
 	{
 		socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
 	}
@@ -63,45 +65,49 @@ namespace OHARBase {
 	 */
 	void NetworkWriter::threadFunc() {
 		if (host.length() > 0 && port > 0) {
-			LOG_INFO(TAG, "Starting the write loop.");
+			LOG(INFO) << TAG << "Starting the write loop.";
 			while (running) {
 				guard.lock();
 				if (!msgQueue.empty()) {
-					LOG_INFO(TAG, "Stuff in send queue!");
+					LOG(INFO) << TAG << "Stuff in send queue!";
 					Package p = msgQueue.front();
 					const boost::uuids::uuid & uid = p.getUuid();
 					currentlySending = boost::uuids::to_string(uid);
 					currentlySending += Package::separator() + p.getTypeAsString();
 					currentlySending += Package::separator() + p.getData();
-					LOG_INFO(TAG, "Sending: " << currentlySending);
+					LOG(INFO) << TAG << "Sending: " << currentlySending;
 					msgQueue.pop();
-               LOG_INFO(TAG, "Just popped, next unlock");
+               LOG(INFO) << TAG << "Just popped, next unlock";
 					guard.unlock();
-               LOG_INFO(TAG, "Determining destination address for " << host << ":" << port);
+               LOG(INFO) << TAG << "Determining destination address for " << host << ":" << port;
 					boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(host), port);
-               LOG_INFO(TAG, "Creating message...");
+               LOG(INFO) << TAG << "Creating message...";
 					boost::shared_ptr<std::string> message(new std::string(currentlySending));
-               LOG_INFO(TAG, "Now sending through socket " << destination.address().to_string() << ":" << destination.port());
+               LOG(INFO) << TAG << "Now sending through socket " << destination.address().to_string() << ":" << destination.port();
 					socket->async_send_to(boost::asio::buffer(*message), destination,
 												 boost::bind(&NetworkWriter::handleSend, this,
 																 boost::asio::placeholders::error,
 																 boost::asio::placeholders::bytes_transferred));
-					LOG_INFO(TAG, "Async send delivered");
+					LOG(INFO) << TAG << "Async send delivered";
 				} else {
 					guard.unlock();
-					LOG_INFO(TAG, "Send queue empty, waiting...");
+					LOG(INFO) << TAG << "Send queue empty, waiting...";
 					std::unique_lock<std::mutex> ulock(guard);
 					condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
 				}
 			}
-			LOG_INFO(TAG, "Shutting down the socket.");
+			LOG(INFO) << TAG << "Shutting down the network writer thread.";
 		}
 	}
 	
 	void NetworkWriter::handleSend(const boost::system::error_code& error,
 						  std::size_t bytes_transferred)
 	{
-		LOG_INFO(TAG, "..and sent through socket with code: " << error.value() << " bytes: " << bytes_transferred);
+      if (error != boost::system::errc::success) {
+         LOG(WARNING) << TAG << "Cannot send data to next node! " << error.value();
+      } else {
+         LOGF(INFO, "Sent %lu bytes through socket.", bytes_transferred);
+      }
 	}
 	
 	/**
@@ -114,6 +120,7 @@ namespace OHARBase {
 		// Set up the socket
 		// start working
 		if (!running) {
+         LOG(INFO) << TAG << "Starting NetworkWriter.";
 			running = true;
 			socket->open(boost::asio::ip::udp::v4());
 			threader = std::thread(&NetworkWriter::threadFunc, this);
@@ -122,7 +129,7 @@ namespace OHARBase {
 	
 	/** Stops the writer. In practise this ends the loop in the send thread. */
 	void NetworkWriter::stop() {
-		LOG_INFO(TAG, "In NetworkWriter::stop.");
+		LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
 		if (running) {
 			running = false;
 			socket->cancel();
@@ -130,7 +137,7 @@ namespace OHARBase {
 			condition.notify_all();
          threader.join();
 		}
-      LOG_INFO(TAG, "Exiting NetworkWriter::stop.");
+      LOG(INFO) << TAG << "Exiting NetworkWriter::stop.";
 	}
 	
 	
@@ -141,7 +148,7 @@ namespace OHARBase {
 	 */
 	void NetworkWriter::write(const Package & data)
 	{
-      LOG_INFO(TAG, "Putting data to writer's message queue.");
+      LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
 		guard.lock();
 		msgQueue.push(data);
 		guard.unlock();

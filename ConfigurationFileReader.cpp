@@ -8,13 +8,15 @@
 
 #include <stdio.h>
 
+#include <g3log/g3log.hpp>
+
 #include <OHARBaseLayer/ConfigurationFileReader.h>
 #include <OHARBaseLayer/ConfigurationDataItem.h>
-#include <OHARBaseLayer/Log.h>
+
 
 namespace OHARBase {
 
-	const std::string ConfigurationFileReader::TAG{"ConfigReader"};
+	const std::string ConfigurationFileReader::TAG{"ConfigReader "};
 	
    /**
     Constructor for configuration file reader.
@@ -34,10 +36,10 @@ namespace OHARBase {
 	OHARBase::DataItem * OHARBase::ConfigurationFileReader::parse(const std::string & str, const std::string & contentType) {
 		ConfigurationDataItem * item = nullptr;
 		if (str.length() > 0) {
-         LOG_INFO(TAG, "Parsing line: " << str);
+         LOG(INFO) << TAG << "Parsing line: " << str;
 			item = new ConfigurationDataItem();
 			if (!item->parse(str, contentType)) {
-            LOG_INFO(TAG, "Configuration failed to parse!");
+            LOG(WARNING) << TAG << "Configuration failed to parse!";
 				delete item;
 				item = 0;
 			}

@@ -10,7 +10,8 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
-#include <OHARBaseLayer/Log.h>
+#include <g3log/g3log.hpp>
+
 #include <OHARBaseLayer/ConfigurationDataItem.h>
 
 namespace OHARBase {
@@ -68,7 +69,7 @@ namespace OHARBase {
 	bool ConfigurationDataItem::parse(const std::string & fromString, const std::string & contentType) {
 		std::vector<std::string> strings;
 		boost::split(strings, fromString, boost::is_any_of("\t"));
-      LOG_INFO(TAG, "String item count: " << strings.size());
+      LOG(INFO) << TAG << "String item count: " << strings.size();
 		if (contentType == "nodeconfiguration" && strings.size() == 2) {
 			setItemName(strings.at(0));
 			setItemValue(strings.at(1));
