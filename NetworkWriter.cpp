@@ -132,6 +132,9 @@ namespace OHARBase {
 		LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
 		if (running) {
 			running = false;
+         while (!msgQueue.empty()) {
+            msgQueue.pop();
+         }
 			socket->cancel();
 			socket->close();
 			condition.notify_all();

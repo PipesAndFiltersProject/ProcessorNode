@@ -34,9 +34,6 @@ namespace OHARBase {
 	
 	/** Destructor cleans all the internal objects of the Node when it is destroyed. */
 	ProcessorNode::~ProcessorNode() {
-      
-      //TODO: should call stop instead, then here destroy the objects?
-      
 		LOG(INFO) << TAG << "Destroying ProcessorNode...";
 		while (!handlers.empty()) {
 			delete handlers.front();
@@ -60,7 +57,7 @@ namespace OHARBase {
 	
 	void ProcessorNode::configure(const std::string & configFile) {
 		if (configFile.length() > 0) {
-         showUIMessage("Configuring node...");
+         showUIMessage("------ > Configuring node...");
 			delete config;
 			config = nullptr;
 			config = new NodeConfiguration();
@@ -74,7 +71,7 @@ namespace OHARBase {
 			setDataFileName(cvalue);
 			cvalue = config->getValue(ConfigurationDataItem::CONF_OUTPUTFILE);
 			setOutputFileName(cvalue);
-         showUIMessage("Configured");
+         showUIMessage("------ > Configured");
 		}
 	}
 	
@@ -213,7 +210,7 @@ namespace OHARBase {
 	 from the keyboard or one arrives from the previous node. */
 	void ProcessorNode::start() {
 		// Start the listening network reader
-      showUIMessage("Starting the node " + name);
+      showUIMessage("------ > Starting the node " + name);
 		if (netInput) {
 			LOG(INFO) << TAG << "Start the input reader";
 			netInput->start();
@@ -229,12 +226,15 @@ namespace OHARBase {
          threader = std::thread(&ProcessorNode::threadFunc, this);
       }
 		
+      showUIMessage("Starting io service thread.");
 		new std::thread([this] {return io_service.run();} );
 		
+      showUIMessage("Starting console thread.");
 		new std::thread([this] {
 			while (running) {
             showUIMessage("Enter command (ping, readfile, quit or shutdown) > ");
 				getline(std::cin, command);
+            LOG(INFO) << TAG << "------ > User command: " << command;
             condition.notify_all();
 				if (command == "quit") {
                return; // running = false;
@@ -242,6 +242,7 @@ namespace OHARBase {
 			}
 		});
 		
+      showUIMessage("Starting command handling loop.");
 		while (running && ((netInput && netInput->isRunning()) || (netOutput && netOutput->isRunning())))
 		{
 			
@@ -271,17 +272,20 @@ namespace OHARBase {
                         p.setType(Package::Control);
                         p.setData(cmd);
                         sendData(p);
-                        showUIMessage("Sending shutdown command to next node (if any).");
+                        showUIMessage("Sent the shutdown command to next node (if any).");
                      }
                      showUIMessage("Initiated quitting of this node...");
                      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                     stop();
+                     running = false;
+                     condition.notify_all();
+                     // stop();
                   }
                }
                return !running;
             });
 			}
 		}
+      stop();
 	}
 	
 	/** Stops the Node. This includes closing and destroying the network reader and/or writer
@@ -291,12 +295,12 @@ namespace OHARBase {
 		running = false;
       showUIMessage("Stopping the node...");
       LOG(INFO) << TAG << "Stopping input...";
-		if (netInput) {
+		if (netInput && netInput->isRunning()) {
 			netInput->stop();
 		}
       LOG(INFO) << TAG << "Stopped input, now stopping output...";
 		// Close and destroy the sending network object
-		if (netOutput) {
+		if (netOutput && netOutput->isRunning()) {
 			netOutput->stop();
 		}
       LOG(INFO) << TAG << "Stopped output, stopping io service...";
@@ -372,7 +376,7 @@ namespace OHARBase {
 					guard.unlock();
                showUIMessage("Package id: " + boost::uuids::to_string(package.getUuid()));
                LOG(INFO) << TAG << "Received package: " << package.getTypeAsString() << ":" << package.getData();
-					while (!package.isEmpty()) {
+					while (!package.isEmpty() && running) {
                   showUIMessage("Package type was " + package.getTypeAsString());
 						if (package.getType() == Package::Control && package.getData() == "shutdown") {
                      showUIMessage("Got shutdown command, forwarding and initiating shutdown.");
@@ -382,7 +386,10 @@ namespace OHARBase {
 //							running = false;
 //							condition.notify_all();
 //							break;
-							stop();
+                     command = "quit";
+                     condition.notify_all();
+                     break;
+							// stop();
 						} else {
                      if (package.getType() == Package::Control) {
                         showUIMessage("Control package arrived with command " + package.getData());
