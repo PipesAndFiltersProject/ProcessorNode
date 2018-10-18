@@ -384,6 +384,9 @@ namespace OHARBase {
 //							break;
 							stop();
 						} else {
+                     if (package.getType() == Package::Control) {
+                        showUIMessage("Control package arrived with command " + package.getData());
+                     }
 							passToHandlers(package);
 							if (netInput) {
 								package = netInput->read();
