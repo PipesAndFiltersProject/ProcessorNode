@@ -46,6 +46,7 @@ namespace OHARBase {
 	class DataHandler;
 	class DataItem;
 	class NodeConfiguration;
+   class ProcessorNodeObserver;
 	
 	/**
 	 ProcessorNode is a central class in the architecture. It acts as the Filter
@@ -78,10 +79,10 @@ namespace OHARBase {
 	 */
 	class ProcessorNode final : public NetworkReaderObserver {
 	public:
-		ProcessorNode(const std::string & aName);
+		ProcessorNode(const std::string & aName, ProcessorNodeObserver * o = nullptr);
 		virtual ~ProcessorNode();
 		
-		void configure(const std::string & configFile);
+		bool configure(const std::string & configFile);
 		
 		void setInputSource(const std::string & hostName);
 		void setOutputSink(const std::string & hostName);
@@ -99,7 +100,8 @@ namespace OHARBase {
 		
 		void start();
 		void stop();
-		
+      bool isRunning() const;
+      
 		void receivedData();
 		
 		void sendData(const Package & data);
@@ -169,6 +171,8 @@ namespace OHARBase {
 		std::string command;
 		/** Logging tag. */
 		const std::string TAG;
+      
+      ProcessorNodeObserver * observer;
 	};
 	
 	
