@@ -106,13 +106,15 @@ namespace OHARBase {
 		
 		void sendData(const Package & data);
 		
+      void passToHandlers(Package & package);
+      
 		void passToNextHandlers(const DataHandler * current, Package & data);
       
       void showUIMessage(const std::string & message);
 		
 	protected:
 		
-		void passToHandlers(Package & package);
+		
 		
 	private:
 		/** The thread function where the handling of the data received by the NetworkReader is done.
