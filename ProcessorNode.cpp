@@ -327,7 +327,10 @@ namespace OHARBase {
       showUIMessage("...Node stopped.");
    }
    
-   
+   void ProcessorNode::handleCommand(const std::string & aCommand) {
+      command = aCommand;
+      condition.notify_all();
+   }
    
    /** Method sends the data to the next node by using the NetworkWriter object.
     @param data The data package to send to the next Node. */
