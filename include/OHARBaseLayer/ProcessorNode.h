@@ -101,6 +101,7 @@ namespace OHARBase {
 		void start();
 		void stop();
       bool isRunning() const;
+      void handleCommand(const std::string & aCommand);
       
 		void receivedData();
 		
