@@ -337,6 +337,7 @@ namespace OHARBase {
    void ProcessorNode::sendData(const Package & data) {
       if (netOutput) {
          showUIMessage("Sending a package of type " + data.getTypeAsString());
+         LOG(INFO) << TAG << "Telling network writer to send a package.";
          netOutput->write(data);
       }
    }
@@ -399,7 +400,7 @@ namespace OHARBase {
                   if (package.getType() == Package::Control && package.getData() == "shutdown") {
                      showUIMessage("Got shutdown command, forwarding and initiating shutdown.");
                      sendData(package);
-                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                      // TODO check if code in comments (modified?) would work without sig abort 6, as stop() does cause it.
                      //							running = false;
                      //							condition.notify_all();

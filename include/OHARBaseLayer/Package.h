@@ -11,6 +11,9 @@
 
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+
+#include <nlohmann/json.hpp>
 
 namespace OHARBase {
 	
@@ -64,9 +67,10 @@ namespace OHARBase {
 		bool operator == (const std::string & str) const;
 		
 		static const std::string & separator();
-		bool parse(const std::string & buffer);
+//		bool parse(const std::string & buffer);
 
 		const std::string & getTypeAsString() const;
+      void setTypeFromString(const std::string & typeStr);
 
 	private:
 		/** The unique identifier for a package. Generated using the boost library support. */
@@ -101,6 +105,9 @@ namespace OHARBase {
 		static const std::string dataStr;
 	};
 	
-	
+   void to_json(nlohmann::json & j, const Package & package);
+   void from_json(const nlohmann::json & j, Package & package);
+   
+   
 } //namespace
 #endif /* defined(__PipesAndFiltersStudentNode__Package__) */

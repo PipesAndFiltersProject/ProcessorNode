@@ -69,12 +69,13 @@ namespace OHARBase {
 			while (running) {
 				guard.lock();
 				if (!msgQueue.empty()) {
-					LOG(INFO) << TAG << "Stuff in send queue!";
+					LOG(INFO) << TAG << "Stuff in send queue! Reading Package";
 					Package p = msgQueue.front();
-					const boost::uuids::uuid & uid = p.getUuid();
-					currentlySending = boost::uuids::to_string(uid);
-					currentlySending += Package::separator() + p.getTypeAsString();
-					currentlySending += Package::separator() + p.getData();
+               LOG(INFO) << TAG << "Package read. Now convert to json...";
+               nlohmann::json j = p;
+               LOG(INFO) << TAG << "...and put to a string for sending: " << j.dump();
+               currentlySending = j.dump();
+               
 					LOG(INFO) << TAG << "Sending: " << currentlySending;
 					msgQueue.pop();
                LOG(INFO) << TAG << "Just popped, next unlock";

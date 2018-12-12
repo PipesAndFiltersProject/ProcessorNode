@@ -17,6 +17,8 @@
 
 #include <g3log/g3log.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <OHARBaseLayer/NetworkReader.h>
 #include <OHARBaseLayer/NetworkReaderObserver.h>
 
@@ -104,14 +106,15 @@ namespace OHARBase {
 				buf.assign(buffer->begin(), bytes_transferred);
             LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes of data: " << buf;
 				if (buf.length()>0) {
-					Package p;
-					if (p.parse(buf)) {
-						guard.lock();
-						msgQueue.push(p);
-						guard.unlock();
-						// And when data has been received, notify the observer.
-						observer.receivedData();
-					}
+               nlohmann::json j = nlohmann::json::parse(buf);
+					Package p = j.get<OHARBase::Package>();
+//					if (p.parse(buf)) {
+               guard.lock();
+               msgQueue.push(p);
+               guard.unlock();
+               // And when data has been received, notify the observer.
+               observer.receivedData();
+//					}
 				}
 			} else {
 				LOG(WARNING) << TAG << "Async recv finished but NO data";

@@ -6,9 +6,11 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#include <boost/uuid/uuid_generators.hpp>
+
 #include <boost/algorithm/string.hpp>
 #include <vector>
+
+#include <boost/uuid/uuid_io.hpp>
 
 #include <OHARBaseLayer/Package.h>
 #include <OHARBaseLayer/DataItem.h>
@@ -118,6 +120,19 @@ namespace OHARBase {
 		}
 	}
 	
+   /** Set the type of the package from a string. Useful when converting from JSON or text form to
+    object.
+    @param typeStr The type of the package as string.
+    */
+   void Package::setTypeFromString(const std::string & typeStr) {
+      if (typeStr == Package::controlStr) {
+         type = Package::Control;
+      } else if (typeStr == Package::dataStr) {
+         type = Package::Data;
+      } else {
+         type = Package::NoType;
+      }
+   }
 
 	/** Get the unparsed data contents for the Package.
 	 @return the data of the package. */
@@ -197,32 +212,55 @@ namespace OHARBase {
 		return separatorStr;
 	}
 	
-	bool Package::parse(const std::string & buffer) {
-		std::vector<std::string> strs;
-		boost::split(strs, buffer, boost::is_any_of(Package::separator()));
-		
-		switch (strs.size()) {
-			case 3: {
-				data = strs.at(2);
-				// fallthrough!
-			}
-			case 2: {
-				if (strs.at(1) == controlStr) {
-					type = Control;
-				} else if (strs.at(1) == dataStr) {
-					type = Data;
-				} else {
-					type = NoType; // Unknown package type, shouldn't happen.
-				}
-			} // fallthrough!
-			case 1: {
-				boost::uuids::string_generator gen;
-				uid = gen(strs.at(0));
-				return true;
-			}
-		}
-		return false;
-	}
+   
+   void to_json(nlohmann::json & j, const Package & package) {
+      j = nlohmann::json{{"package", to_string(package.getUuid())}};
+      j["type"] = package.getTypeAsString();
+      j["payload"] = package.getData();
+   }
+   
+   void from_json(const nlohmann::json & j, Package & package) {
+      if (j.find("package") != j.end()) {
+         boost::uuids::string_generator gen;
+         package.setUuid(gen(j["package"].get<std::string>()));
+      }
+      if (j.find("type") != j.end()) {
+         package.setTypeFromString(j["type"].get<std::string>());
+      }
+      if (j.find("payload") != j.end()) {
+         package.setData(j["payload"].get<std::string>());
+      }
+   }
+   
+   
+//   bool Package::parse(const std::string & buffer) {
+//      std::vector<std::string> strs;
+//      boost::split(strs, buffer, boost::is_any_of(Package::separator()));
+//
+//      switch (strs.size()) {
+//         case 3: {
+//            data = strs.at(2);
+//            // fallthrough!
+//         }
+//         case 2: {
+//            if (strs.at(1) == controlStr) {
+//               type = Control;
+//            } else if (strs.at(1) == dataStr) {
+//               type = Data;
+//            } else {
+//               type = NoType; // Unknown package type, shouldn't happen.
+//            }
+//         } // fallthrough!
+//         case 1: {
+//            boost::uuids::string_generator gen;
+//            uid = gen(strs.at(0));
+//            return true;
+//         }
+//      }
+//      return false;
+//   }
 	
+
+   
 	
 } //namespace
