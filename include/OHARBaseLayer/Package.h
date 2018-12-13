@@ -104,6 +104,8 @@ namespace OHARBase {
         static const std::string controlStr;
         /** Textual representation of the package type Package::Data. */
         static const std::string dataStr;
+        /** Textual representation of the package type Package:NoType. */
+        static const std::string noTypeStr;
     };
     
     void to_json(nlohmann::json & j, const Package & package);

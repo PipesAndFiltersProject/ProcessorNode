@@ -22,6 +22,7 @@ namespace OHARBase {
 	const std::string Package::separatorStr("\\");
 	const std::string Package::controlStr = "control";
 	const std::string Package::dataStr = "data";
+    const std::string Package::noTypeStr = "";
 	
 	/** Default constructor for Package. Generates a random uuid for the Package. */
 	Package::Package()
@@ -106,7 +107,6 @@ namespace OHARBase {
 	 a stream (file, network).
 	 @return the Package type as string.*/
 	const std::string & Package::getTypeAsString() const {
-		static const std::string empty = "";
 		switch (type) {
 			case Control: {
 				return controlStr;
@@ -115,7 +115,7 @@ namespace OHARBase {
 				return dataStr;
 			}
 			default: {
-				return empty;
+				return noTypeStr;
 			}
 		}
 	}
