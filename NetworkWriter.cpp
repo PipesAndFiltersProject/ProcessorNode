@@ -73,7 +73,6 @@ namespace OHARBase {
 					Package p = msgQueue.front();
                LOG(INFO) << TAG << "Package read. Now convert to json...";
                nlohmann::json j = p;
-               LOG(INFO) << TAG << "...and put to a string for sending: " << j.dump();
                currentlySending = j.dump();
                
 					LOG(INFO) << TAG << "Sending: " << currentlySending;
