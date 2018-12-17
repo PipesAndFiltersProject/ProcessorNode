@@ -390,9 +390,9 @@ namespace OHARBase {
             LOG(INFO) << TAG << "Received a package!";
             showUIMessage("Received data from previous node.");
             if (netInput) {
-               guard.lock();
+                // TODO: test this without locks, read() already uses mutex. guard.lock();
                Package package = netInput->read();
-               guard.unlock();
+               // guard.unlock();
                showUIMessage("Package id: " + boost::uuids::to_string(package.getUuid()));
                LOG(INFO) << TAG << "Received package: " << package.getTypeAsString() << ":" << package.getData();
                while (!package.isEmpty() && running) {
