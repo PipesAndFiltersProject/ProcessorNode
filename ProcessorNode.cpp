@@ -456,7 +456,6 @@ namespace OHARBase {
    }
    
    void ProcessorNode::showUIMessage(const std::string & message) {
-      std::cout << message << std::endl;
       if (observer != nullptr) {
          observer->NodeEventHappened(ProcessorNodeObserver::EventType::UINotification, message);
       }
