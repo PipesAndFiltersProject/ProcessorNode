@@ -292,7 +292,8 @@ namespace OHARBase {
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
                         running = false;
                         condition.notify_all();
-                        // stop();
+                        stop();
+                        initiateClientAppShutdown();
                      }
                   }
                   return !running;
@@ -300,6 +301,7 @@ namespace OHARBase {
             }
          }
       });
+      LOG(INFO) << "Exiting the ProcessorNode command handling loop.";
       // stop();
    }
    
@@ -461,5 +463,10 @@ namespace OHARBase {
       }
    }
    
+   void ProcessorNode::initiateClientAppShutdown() {
+      if (observer != nullptr) {
+         observer->NodeEventHappened(ProcessorNodeObserver::EventType::ShutDownCommand, "Shutdown of node requested from network.");
+      }
+   }
 } //namespace
 

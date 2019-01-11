@@ -20,7 +20,7 @@ public:
    ProcessorNodeObserver() {/*empty*/};
    virtual ~ProcessorNodeObserver() {/*empty*/};
  
-   enum EventType { UINotification, Error };
+   enum EventType { UINotification, ShutDownCommand, Error };
    virtual void NodeEventHappened(EventType e, const std::string & message) = 0;
 
 protected:
