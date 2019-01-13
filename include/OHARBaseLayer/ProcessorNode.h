@@ -103,7 +103,8 @@ namespace OHARBase {
         bool isRunning() const;
         void handleCommand(const std::string & aCommand);
         
-        void receivedData();
+        virtual void receivedData() override;
+        virtual void errorInData(const std::string & what) override;
         
         void sendData(const Package & data);
         

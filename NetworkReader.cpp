@@ -106,13 +106,17 @@ namespace OHARBase {
                 buf.assign(buffer->begin(), bytes_transferred);
                 LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes of data: " << buf;
                 if (buf.length()>0) {
-                    nlohmann::json j = nlohmann::json::parse(buf);
-                    Package p = j.get<OHARBase::Package>();
-                    guard.lock();
-                    msgQueue.push(p);
-                    guard.unlock();
-                    // And when data has been received, notify the observer.
-                    observer.receivedData();
+                    try {
+                        nlohmann::json j = nlohmann::json::parse(buf);
+                        Package p = j.get<OHARBase::Package>();
+                        guard.lock();
+                        msgQueue.push(p);
+                        guard.unlock();
+                        // And when data has been received, notify the observer.
+                        observer.receivedData();
+                    } catch (const std::exception & e) {
+                        observer.errorInData(e.what());
+                    }
                 }
             } else {
                 LOG(WARNING) << TAG << "Async recv finished but NO data";

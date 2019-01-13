@@ -509,6 +509,13 @@ namespace OHARBase {
         condition.notify_all();
     }
     
+    void ProcessorNode::errorInData(const std::string & what) {
+        std::stringstream sstream;
+        sstream << "ERROR in incoming data; discarded " << what;
+        LOG(WARNING) << sstream.str();
+        showUIMessage(sstream.str());
+    }
+    
     void ProcessorNode::showUIMessage(const std::string & message) {
         if (observer != nullptr) {
             observer->NodeEventHappened(ProcessorNodeObserver::EventType::UINotificationEvent, message);

@@ -22,6 +22,7 @@ namespace OHARBase {
 		/** NetworkReader calls this interface method when data has been received.
 		 The observer then reads the data from the NetworkReader. */
 		virtual void receivedData() = 0;
+        virtual void errorInData(const std::string & what) = 0;
 	};
 	
 	
