@@ -79,7 +79,8 @@ namespace OHARBase {
 		/** The boost socket to use when sending or receiving data. */
 		std::unique_ptr<boost::asio::ip::udp::socket> socket;
 		/** The buffer where incoming or outgoing data is stored into. */
-		std::shared_ptr<boost::array<char, 2048>> buffer;
+        static const int BufferSize = 4096;
+		std::shared_ptr<boost::array<char, BufferSize>> buffer;
 	};
 	
 	
