@@ -127,8 +127,8 @@ namespace OHARBase {
     /** Stops the reader by setting the running flag to false, effectively ending the thread
      loop in the threadFunc(). */
     void NetworkReader::stop() {
-        LOG(INFO) << TAG << "Stop the reader...";
         if (running) {
+            LOG(INFO) << TAG << "Stop the reader...";
             running = false;
             LOG(INFO) << TAG << "Shutting down the socket.";
             socket->cancel();

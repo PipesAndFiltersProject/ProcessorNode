@@ -30,7 +30,7 @@ namespace OHARBase {
      @param io_s The boost asio io service.
      */
     NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
-    : Networker(hostName,io_s), TAG("NetWriter ")
+    : Networker(hostName,io_s), TAG("NetWriter "), threader(nullptr)
     {
         socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
     }
@@ -43,7 +43,7 @@ namespace OHARBase {
      @param io_s The boost asio io service.
      */
     NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-    : Networker(hostName, portNumber, io_s), TAG("NetWriter ")
+    : Networker(hostName, portNumber, io_s), TAG("NetWriter "), threader(nullptr)
     {
         socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
     }
@@ -64,6 +64,7 @@ namespace OHARBase {
      @todo Reimplement using std lib socket implementation.
      */
     void NetworkWriter::threadFunc() {
+        running = true;
         if (host.length() > 0 && port > 0) {
             LOG(INFO) << TAG << "Starting the write loop.";
             while (running) {
@@ -121,9 +122,8 @@ namespace OHARBase {
         // start working
         if (!running) {
             LOG(INFO) << TAG << "Starting NetworkWriter.";
-            running = true;
             socket->open(boost::asio::ip::udp::v4());
-            threader = std::thread(&NetworkWriter::threadFunc, this);
+            threader = new std::thread(&NetworkWriter::threadFunc, this);
         }
     }
     
@@ -132,13 +132,15 @@ namespace OHARBase {
         LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
         if (running) {
             running = false;
+            condition.notify_all();
+            threader->join();
             while (!msgQueue.empty()) {
                 msgQueue.pop();
             }
             socket->cancel();
             socket->close();
-            condition.notify_all();
-            threader.join();
+            delete threader;
+            threader = nullptr;
         }
         LOG(INFO) << TAG << "Exiting NetworkWriter::stop.";
     }
@@ -151,12 +153,14 @@ namespace OHARBase {
      */
     void NetworkWriter::write(const Package & data)
     {
-        LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
-        guard.lock();
-        msgQueue.push(data);
-        guard.unlock();
-        // Notify the writer thread there's something to send.
-        condition.notify_one();
+        if (running) {
+            LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
+            guard.lock();
+            msgQueue.push(data);
+            guard.unlock();
+            // Notify the writer thread there's something to send.
+            condition.notify_one();
+        }
     }
     
     
