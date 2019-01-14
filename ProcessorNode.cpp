@@ -59,7 +59,12 @@ namespace OHARBase {
         LOG(INFO) << TAG << "..ProcessorNode destroyed.";
     }
     
-    
+    /**
+     Configures the node using the provided configuration file. For file details, see
+     documentation of the project and @ConfigurationFileReader class.
+     @param configFile The name of the file where configuration is read from.
+     @return True if configuration was done successfully, false otherwise.
+     */
     bool ProcessorNode::configure(const std::string & configFile) {
         bool success = false;
         if (configFile.length() > 0) {
@@ -230,15 +235,17 @@ namespace OHARBase {
         return outputFileName;
     }
     
+    /** Used to query if the node is running or not (start() has been successfully called).
+     @return Returns true if node is running. */
     bool ProcessorNode::isRunning() const {
         return running;
     }
     
     
     /** Starts the Node. This includes starting the network reader and/or writer for
-     communicating to other Nodes, starting the data handling thread, and looping in the
-     main thread to handle user commands. The start loop runs until shutdown command is given
-     from the keyboard or one arrives from the previous node. */
+     communicating to other Nodes, starting the data handling thread, and looping in a separate
+     thread to handle user commands. After successfully starting the node, method returns to
+     caller and the ProcessorNode threads handle commands and incoming data processing. */
     void ProcessorNode::start() {
         if (running) return;
         
@@ -350,8 +357,8 @@ namespace OHARBase {
     }
     
     /** Stops the Node. This includes closing and destroying the network reader and/or writer
-     and setting the running flag to false. These operations finishes the data handling thread
-     as well as the main thread loop running in the start() method. */
+     and setting the running flag to false. These operations finishes the threads
+     started in the start() method. */
     void ProcessorNode::stop() {
         showUIMessage("Stopping the node...");
         if (running) {
@@ -383,6 +390,9 @@ namespace OHARBase {
         showUIMessage("...Node stopped.");
     }
     
+    /** Handles a command from the user/app. Command handling is processed in a dedicated thread
+     started in the start() method.
+     @param aCommand The command received from the user/app. */
     void ProcessorNode::handleCommand(const std::string & aCommand) {
         command = aCommand;
         condition.notify_all();
@@ -431,20 +441,23 @@ namespace OHARBase {
      NetworkReader. mutexes and condition variables are used to notify of such situation
      as well as guard the incoming message queue. As packages arrive, the function
      passes the package to Handlers. It also checks if the package is a shutdown control
-     message and if that is so, the run loop is stopped.
+     message and if that is so, shutdown message is first sent to the following node (if any),
+     and the quit command is passsed to the command handling thread to shut down the node.
      */
     void ProcessorNode::threadFunc() {
         while (running) {
             LOG(INFO) << TAG << "Receive queue empty, waiting...";
             
             {
+                // Wait for the condition variable to be notified of something happening.
                 std::unique_lock<std::mutex> ulock(guard);
                 condition.wait(ulock, [this] { return this->hasIncoming || !running; });
             }
-            
+            // OK, something happened so if we are still running, check if something came from the network.
             if (running) {
                 if (netInput) {
                     Package package = netInput->read();
+                    // If package is empty, nothing came.
                     while (!package.isEmpty() && running) {
                         LOG(INFO) << TAG << "Received a package!";
                         showUIMessage("Received data from previous node.");
@@ -461,8 +474,10 @@ namespace OHARBase {
                             if (package.getType() == Package::Control) {
                                 showUIMessage("Control package arrived with command " + package.getData());
                             }
+                            // Package was either data or control, so let the handlers handle it.
                             passToHandlers(package);
                             if (netInput) {
+                                // Check if there are more packages to handle; handle them all while we are here.
                                 package = netInput->read();
                             }
                         }
@@ -477,7 +492,7 @@ namespace OHARBase {
     /** This method takes the incoming data and passes it to be handled by the
      DataHandler objects in the Node. The data is given to all Handlers until one
      returns true, indicating that the package has been handled and should not be passed
-     ahead anymore. A Handler can of course handle the package and still return false,
+     ahead to next handlers anymore. A Handler can of course handle the package and still return false,
      enabling multiple handlers for a single package.
      @param package The data package to handle. */
     void ProcessorNode::passToHandlers(Package & package) {
@@ -508,7 +523,11 @@ namespace OHARBase {
         hasIncoming = true;
         condition.notify_all();
     }
-    
+    // From NetworkReaderObserver:
+    /** Called by the NetworkReader when it could not parse/handle the incoming data.
+     Not much can be done about it, than to log and notify app/user. Let them see what was
+     wrong and do something about it.
+     @param what The error message. */
     void ProcessorNode::errorInData(const std::string & what) {
         std::stringstream sstream;
         sstream << "ERROR in incoming data; discarded " << what;
@@ -516,12 +535,17 @@ namespace OHARBase {
         showUIMessage(sstream.str());
     }
     
+    /** Notifies the node observer (assuming it is a (G)UI) of something.
+     @param message The message to the user. */
     void ProcessorNode::showUIMessage(const std::string & message) {
         if (observer != nullptr) {
             observer->NodeEventHappened(ProcessorNodeObserver::EventType::UINotificationEvent, message);
         }
     }
     
+    /** Notifies the node observer (assuming it is a (G)UI) of something and log it too.
+     @param message The message to show to user.
+     @param isWarning If true, log this as a warning. */
     void ProcessorNode::logAndShowUIMessage(const std::string & message, bool isWarning) {
         if (isWarning) {
             LOG(WARNING) << message;
@@ -531,6 +555,8 @@ namespace OHARBase {
         showUIMessage(message);
     }
     
+    /** Node wants to shut itself down so notify also the client app/ui so that
+     it can close the app. Node has already (or is in the process of) closed itself. */
     void ProcessorNode::initiateClientAppShutdown() {
         if (observer != nullptr) {
             observer->NodeEventHappened(ProcessorNodeObserver::EventType::ShutDownEvent, "Shutdown of node requested from network.");

@@ -55,13 +55,12 @@ namespace OHARBase {
     
     
     /** Thread function which does all the relevant work of sending data packages.
-     First, the function sets up the networking things, and then runs in a loop, waiting
-     for data packages to arrive. When one arrives, it is notified of it, and then goes
-     through a round of a loop. There, the package is taken from the queue, packaged
-     in a data string and then sent over the network. Locks and synchronization are used
-     to make sure the queueu is handled by one thread at a time only. Function quits the loop
+     start() method sets up the networking things, and then threadFunc() is waiting
+     for data packages to arrive. When one arrives, it is notified of it (see write()), and then goes
+     through a round of a loop. In the loop, a package is taken from the queue, packaged
+     in a json data string and then sent over the network. Locks and synchronization are used
+     to make sure the queue is handled by one thread at a time only. Function quits the loop
      and returns when the stop() is called and the running flag is set to false.
-     @todo Reimplement using std lib socket implementation.
      */
     void NetworkWriter::threadFunc() {
         running = true;
@@ -101,6 +100,9 @@ namespace OHARBase {
         }
     }
     
+    /** This method is called when the boost async send finishes.
+     @param error Result code of sending, might be an error.
+     @param bytes_transferred How many bytes were sent. */
     void NetworkWriter::handleSend(const boost::system::error_code& error,
                                    std::size_t bytes_transferred)
     {
@@ -114,7 +116,7 @@ namespace OHARBase {
     /**
      Starts the network writer.
      Basically starting the writer starts the thread which is waiting for
-     notification of data arriving in the send queue in a separate thread.
+     notification of data put in the send queue by somebody (calling write()).
      */
     void NetworkWriter::start() {
         // Create and run in thread...
@@ -148,7 +150,7 @@ namespace OHARBase {
     
     /** Use write to send packages to the next ProcessorNode. The package is
      put into a queue of packages to send and will be sent when all the previous packages
-     have been sent.
+     have been sent by the threadFunc().
      @param data The data package to send.
      */
     void NetworkWriter::write(const Package & data)

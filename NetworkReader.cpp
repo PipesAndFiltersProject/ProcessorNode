@@ -92,7 +92,7 @@ namespace OHARBase {
     }
     
     /** Handles the incoming data and possible errors. Places finally another read
-     to the socket.
+     to the socket to handle more incoming data.
      @param error Error code
      @param bytes_transferred How many bytes came in. */
     void NetworkReader::handleReceive(const boost::system::error_code & error, std::size_t bytes_transferred) {
@@ -123,6 +123,7 @@ namespace OHARBase {
             }
             if (running)
             {
+                // Make another read request to the socket.
                 start();
             }
         }

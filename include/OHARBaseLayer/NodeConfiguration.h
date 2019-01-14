@@ -36,6 +36,7 @@ namespace OHARBase {
 		NodeConfiguration * operator =(const NodeConfiguration &) = delete;
 		
 	private:
+        /** Configuration items of the node. */
 		std::vector<ConfigurationDataItem*> configItems;
 		
 	};

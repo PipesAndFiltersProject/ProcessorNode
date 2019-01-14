@@ -17,7 +17,7 @@ namespace OHARBase {
 	}
 	
 	/**
-	 Consumes a data package offered to the handler.
+	 Consumes a data package offered to the handler. Default empty implementation which just returns false.
 	 @param data The data to handle.
 	 @return true if data was handled and/or it should not be offered to any other handler. False otherwise.
 	 Default implementation returns false;
