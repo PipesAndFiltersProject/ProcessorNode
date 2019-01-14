@@ -25,7 +25,8 @@
 namespace OHARBase {
     
     /** Constructor for the processor node.
-     @param aName The name of the processor node. */
+     @param aName The name of the processor node.
+     @param o The observer of the node who gets event and error notifications of activities in the node. */
     ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * o)
     : config(0), name(aName), netInput(0), netOutput(0), running(false), hasIncoming(false), TAG("PNode "), observer(o)
     {
@@ -61,7 +62,7 @@ namespace OHARBase {
     
     /**
      Configures the node using the provided configuration file. For file details, see
-     documentation of the project and @ConfigurationFileReader class.
+     documentation of the project and ConfigurationFileReader class.
      @param configFile The name of the file where configuration is read from.
      @return True if configuration was done successfully, false otherwise.
      */
