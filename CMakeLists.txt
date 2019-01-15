@@ -17,7 +17,7 @@ if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
        include/${LIB_NAME}/NodeConfiguration.h include/${LIB_NAME}/Package.h include/${LIB_NAME}/PingHandler.h
        include/${LIB_NAME}/ProcessorNode.h include/${LIB_NAME}/ProcessorNodeObserver.h)
    set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS -fPIC -g -Wall)
-   set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS -Wl)
+   set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS "-Wl -lpthread")
    set_target_properties(${LIB_NAME} PROPERTIES CXX_STANDARD 14)
    target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/> $<INSTALL_INTERFACE:include/${LIB_NAME}> ${Boost_INCLUDE_DIRS} ${G3LOG_INCLUDE_DIRS})
    target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES})
