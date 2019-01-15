@@ -92,7 +92,7 @@ namespace OHARBase {
     }
     
     /** Handles the incoming data and possible errors. Places finally another read
-     to the socket.
+     to the socket to handle more incoming data.
      @param error Error code
      @param bytes_transferred How many bytes came in. */
     void NetworkReader::handleReceive(const boost::system::error_code & error, std::size_t bytes_transferred) {
@@ -106,19 +106,24 @@ namespace OHARBase {
                 buf.assign(buffer->begin(), bytes_transferred);
                 LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes of data: " << buf;
                 if (buf.length()>0) {
-                    nlohmann::json j = nlohmann::json::parse(buf);
-                    Package p = j.get<OHARBase::Package>();
-                    guard.lock();
-                    msgQueue.push(p);
-                    guard.unlock();
-                    // And when data has been received, notify the observer.
-                    observer.receivedData();
+                    try {
+                        nlohmann::json j = nlohmann::json::parse(buf);
+                        Package p = j.get<OHARBase::Package>();
+                        guard.lock();
+                        msgQueue.push(p);
+                        guard.unlock();
+                        // And when data has been received, notify the observer.
+                        observer.receivedData();
+                    } catch (const std::exception & e) {
+                        observer.errorInData(e.what());
+                    }
                 }
             } else {
                 LOG(WARNING) << TAG << "Async recv finished but NO data";
             }
             if (running)
             {
+                // Make another read request to the socket.
                 start();
             }
         }
@@ -127,8 +132,8 @@ namespace OHARBase {
     /** Stops the reader by setting the running flag to false, effectively ending the thread
      loop in the threadFunc(). */
     void NetworkReader::stop() {
-        LOG(INFO) << TAG << "Stop the reader...";
         if (running) {
+            LOG(INFO) << TAG << "Stop the reader...";
             running = false;
             LOG(INFO) << TAG << "Shutting down the socket.";
             socket->cancel();

@@ -54,7 +54,7 @@ namespace OHARBase {
 		/** The condition variable used to signal the sending thread that new data is available
 		 in the queue. */
 		std::condition_variable condition;
-		std::thread threader;
+		std::thread * threader;
 		/** Logging tag. */
 		const std::string TAG;
 		

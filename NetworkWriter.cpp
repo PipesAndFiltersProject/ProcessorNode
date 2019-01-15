@@ -30,7 +30,7 @@ namespace OHARBase {
      @param io_s The boost asio io service.
      */
     NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
-    : Networker(hostName,io_s), TAG("NetWriter ")
+    : Networker(hostName,io_s), threader(nullptr), TAG("NetWriter ")
     {
         socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
     }
@@ -43,7 +43,7 @@ namespace OHARBase {
      @param io_s The boost asio io service.
      */
     NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-    : Networker(hostName, portNumber, io_s), TAG("NetWriter ")
+    : Networker(hostName, portNumber, io_s), threader(nullptr), TAG("NetWriter ")
     {
         socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
     }
@@ -55,15 +55,15 @@ namespace OHARBase {
     
     
     /** Thread function which does all the relevant work of sending data packages.
-     First, the function sets up the networking things, and then runs in a loop, waiting
-     for data packages to arrive. When one arrives, it is notified of it, and then goes
-     through a round of a loop. There, the package is taken from the queue, packaged
-     in a data string and then sent over the network. Locks and synchronization are used
-     to make sure the queueu is handled by one thread at a time only. Function quits the loop
+     start() method sets up the networking things, and then threadFunc() is waiting
+     for data packages to arrive. When one arrives, it is notified of it (see write()), and then goes
+     through a round of a loop. In the loop, a package is taken from the queue, packaged
+     in a json data string and then sent over the network. Locks and synchronization are used
+     to make sure the queue is handled by one thread at a time only. Function quits the loop
      and returns when the stop() is called and the running flag is set to false.
-     @todo Reimplement using std lib socket implementation.
      */
     void NetworkWriter::threadFunc() {
+        running = true;
         if (host.length() > 0 && port > 0) {
             LOG(INFO) << TAG << "Starting the write loop.";
             while (running) {
@@ -100,6 +100,9 @@ namespace OHARBase {
         }
     }
     
+    /** This method is called when the boost async send finishes.
+     @param error Result code of sending, might be an error.
+     @param bytes_transferred How many bytes were sent. */
     void NetworkWriter::handleSend(const boost::system::error_code& error,
                                    std::size_t bytes_transferred)
     {
@@ -113,7 +116,7 @@ namespace OHARBase {
     /**
      Starts the network writer.
      Basically starting the writer starts the thread which is waiting for
-     notification of data arriving in the send queue in a separate thread.
+     notification of data put in the send queue by somebody (calling write()).
      */
     void NetworkWriter::start() {
         // Create and run in thread...
@@ -121,9 +124,8 @@ namespace OHARBase {
         // start working
         if (!running) {
             LOG(INFO) << TAG << "Starting NetworkWriter.";
-            running = true;
             socket->open(boost::asio::ip::udp::v4());
-            threader = std::thread(&NetworkWriter::threadFunc, this);
+            threader = new std::thread(&NetworkWriter::threadFunc, this);
         }
     }
     
@@ -132,13 +134,15 @@ namespace OHARBase {
         LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
         if (running) {
             running = false;
+            condition.notify_all();
+            threader->join();
             while (!msgQueue.empty()) {
                 msgQueue.pop();
             }
             socket->cancel();
             socket->close();
-            condition.notify_all();
-            threader.join();
+            delete threader;
+            threader = nullptr;
         }
         LOG(INFO) << TAG << "Exiting NetworkWriter::stop.";
     }
@@ -146,17 +150,19 @@ namespace OHARBase {
     
     /** Use write to send packages to the next ProcessorNode. The package is
      put into a queue of packages to send and will be sent when all the previous packages
-     have been sent.
+     have been sent by the threadFunc().
      @param data The data package to send.
      */
     void NetworkWriter::write(const Package & data)
     {
-        LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
-        guard.lock();
-        msgQueue.push(data);
-        guard.unlock();
-        // Notify the writer thread there's something to send.
-        condition.notify_one();
+        if (running) {
+            LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
+            guard.lock();
+            msgQueue.push(data);
+            guard.unlock();
+            // Notify the writer thread there's something to send.
+            condition.notify_one();
+        }
     }
     
     

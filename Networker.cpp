@@ -29,7 +29,7 @@ namespace OHARBase {
 	:	running(false)
 	{
 		setHost(hostName);
-		buffer = std::shared_ptr<boost::array<char, 2048>>(new boost::array<char, 2048>());
+		buffer = std::shared_ptr<boost::array<char, BufferSize>>(new boost::array<char, BufferSize>());
 	}
 	
 	
@@ -48,7 +48,7 @@ namespace OHARBase {
 	Networker::Networker(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
 	: host(hostName), port(portNumber), running(false)
 	{
-		buffer = std::shared_ptr<boost::array<char, 2048>>(new boost::array<char, 2048>());
+		buffer = std::shared_ptr<boost::array<char, BufferSize>>(new boost::array<char, BufferSize>());
 	}
 	
 	Networker::~Networker() {
