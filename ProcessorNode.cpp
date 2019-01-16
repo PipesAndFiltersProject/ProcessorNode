@@ -266,11 +266,11 @@ namespace OHARBase {
          running = true;
          if (netInput) {
             LOG(INFO) << TAG << "Start the network receive handler thread...";
-            incomingHandlerThread = std::thread(&ProcessorNode::threadFunc, this);
+            incomingHandlerThread = new std::thread(&ProcessorNode::threadFunc, this);
          }
          
          LOG(INFO) << "Starting io service thread.";
-         ioServiceThread = std::thread([this] {return io_service.run();} );
+         ioServiceThread = new std::thread([this] {return io_service.run();} );
          
       } catch (const std::exception & e) {
          stop();
@@ -294,7 +294,7 @@ namespace OHARBase {
       //      });
       
       LOG(INFO) << "Starting command handling loop.";
-      commandHandlerThread = std::thread([this] {
+      commandHandlerThread = new std::thread([this] {
          bool shutDownOrdered = false;
          while (running && ((netInput && netInput->isRunning()) || (netOutput && netOutput->isRunning())))
          {
@@ -379,17 +379,20 @@ namespace OHARBase {
          }
          // Pause the calling thread to allow node & network threads to finish their jobs.
          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-         if (incomingHandlerThread.joinable()) {
+         if (incomingHandlerThread->joinable()) {
             LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
-            incomingHandlerThread.detach();
+            incomingHandlerThread->detach();
+            delete incomingHandlerThread; incomingHandlerThread = nullptr;
          }
-         if (commandHandlerThread.joinable()) {
+         if (commandHandlerThread->joinable()) {
             LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
-            commandHandlerThread.detach();
+            commandHandlerThread->detach();
+            delete commandHandlerThread; commandHandlerThread = nullptr;
          }
-         if (ioServiceThread.joinable()) {
+         if (ioServiceThread->joinable()) {
             LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
-            ioServiceThread.detach();
+            ioServiceThread->detach();
+            delete ioServiceThread; ioServiceThread = nullptr;
          }
          
          LOG(INFO) << TAG << "...threads finished, exiting ProcessorNode::stop";
