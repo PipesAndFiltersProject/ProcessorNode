@@ -167,11 +167,11 @@ namespace OHARBase {
         /** Flag for indicating is the Node running or not. */
         bool running;
         /** Thread for handling the incoming data. */
-        std::thread * incomingHandlerThread;
+        std::thread incomingHandlerThread;
         /** Thread for handling boost io_service */
-        std::thread * ioServiceThread;
+        std::thread ioServiceThread;
         /** Thread for handling commands from user and network */
-        std::thread * commandHandlerThread;
+        std::thread commandHandlerThread;
         /** Mutex for guarding access to elements shared between threads. */
         std::mutex guard;
         /** Condition variable for notifications between threads to indicate processing is

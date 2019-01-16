@@ -28,7 +28,7 @@ namespace OHARBase {
     @param aName The name of the processor node.
     @param o The observer of the node who gets event and error notifications of activities in the node. */
    ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * o)
-   : config(0), name(aName), netInput(0), netOutput(0), running(false), hasIncoming(false), TAG("PNode "), observer(o)
+   : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false), hasIncoming(false), TAG("PNode "), observer(nullptr)
    {
       LOG(INFO) << TAG << "Creating ProcessorNode.";
       handlers.push_back(new PingHandler(*this));
@@ -266,11 +266,11 @@ namespace OHARBase {
          LOG(INFO) << TAG << "Start the network receive handler thread...";
          running = true;
          if (netInput) {
-            incomingHandlerThread = new std::thread(&ProcessorNode::threadFunc, this);
+            incomingHandlerThread = std::thread(&ProcessorNode::threadFunc, this);
          }
          
          LOG(INFO) << "Starting io service thread.";
-         ioServiceThread = new std::thread([this] {return io_service.run();} );
+         ioServiceThread = std::thread([this] {return io_service.run();} );
          
       } catch (const std::exception & e) {
          stop();
@@ -294,7 +294,7 @@ namespace OHARBase {
       //      });
       
       LOG(INFO) << "Starting command handling loop.";
-      commandHandlerThread = new std::thread([this] {
+      commandHandlerThread = std::thread([this] {
          bool shutDownOrdered = false;
          while (running && ((netInput && netInput->isRunning()) || (netOutput && netOutput->isRunning())))
          {
@@ -334,7 +334,7 @@ namespace OHARBase {
                               running = false;
                               shutDownOrdered = true;
                               condition.notify_all();
-                              std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                              std::this_thread::sleep_for(std::chrono::milliseconds(100));
                            }
                         }
                      } catch (const std::exception & e) {
@@ -378,23 +378,20 @@ namespace OHARBase {
             netOutput->stop();
          }
          // Pause the calling thread to allow node & network threads to finish their jobs.
-         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+         std::this_thread::sleep_for(std::chrono::milliseconds(100));
          LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
-         if (incomingHandlerThread && incomingHandlerThread->joinable()) {
-            incomingHandlerThread->join();
+         if (incomingHandlerThread.joinable()) {
+            incomingHandlerThread.detach();
          }
          LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
-         if (commandHandlerThread && commandHandlerThread->joinable()) {
-            commandHandlerThread->join();
+         if (commandHandlerThread.joinable()) {
+            commandHandlerThread.detach();
          }
          LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
-         if (ioServiceThread && ioServiceThread->joinable()) {
-            ioServiceThread->join();
+         if (ioServiceThread.joinable()) {
+            ioServiceThread.detach();
          }
          
-         delete incomingHandlerThread; incomingHandlerThread = nullptr;
-         delete commandHandlerThread; commandHandlerThread = nullptr;
-         delete ioServiceThread; ioServiceThread = nullptr;
          LOG(INFO) << TAG << "...threads finished, exiting ProcessorNode::stop";
       }
       showUIMessage("...Node stopped.");
