@@ -27,8 +27,8 @@ namespace OHARBase {
    /** Constructor for the processor node.
     @param aName The name of the processor node.
     @param o The observer of the node who gets event and error notifications of activities in the node. */
-   ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * o)
-   : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false), hasIncoming(false), TAG("PNode "), observer(nullptr)
+   ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
+   : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false), hasIncoming(false), TAG("PNode "), observer(obs)
    {
       LOG(INFO) << TAG << "Creating ProcessorNode.";
       handlers.push_back(new PingHandler(*this));
