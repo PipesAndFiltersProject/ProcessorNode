@@ -263,9 +263,9 @@ namespace OHARBase {
             netOutput->start();
          }
          
-         LOG(INFO) << TAG << "Start the network receive handler thread...";
          running = true;
          if (netInput) {
+            LOG(INFO) << TAG << "Start the network receive handler thread...";
             incomingHandlerThread = std::thread(&ProcessorNode::threadFunc, this);
          }
          
