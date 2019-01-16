@@ -379,16 +379,16 @@ namespace OHARBase {
          }
          // Pause the calling thread to allow node & network threads to finish their jobs.
          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-         LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
          if (incomingHandlerThread.joinable()) {
+            LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
             incomingHandlerThread.detach();
          }
-         LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
          if (commandHandlerThread.joinable()) {
+            LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
             commandHandlerThread.detach();
          }
-         LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
          if (ioServiceThread.joinable()) {
+            LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
             ioServiceThread.detach();
          }
          
@@ -472,7 +472,7 @@ namespace OHARBase {
                   if (package.getType() == Package::Control && package.getData() == "shutdown") {
                      showUIMessage("Got shutdown command, forwarding and initiating shutdown.");
                      sendData(package);
-                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
                      command = "quit";
                      condition.notify_all();
                      // Do not handle possible remaining packages after shutdown message.

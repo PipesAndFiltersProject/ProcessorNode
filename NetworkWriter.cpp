@@ -22,148 +22,150 @@
 
 
 namespace OHARBase {
-    
-    /**
-     Constructor to create the writer with host name. See the
-     constructor of Networker class about handling the parameters.
-     @param hostName the host to send data to, including port number.
-     @param io_s The boost asio io service.
-     */
-    NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
-    : Networker(hostName,io_s), threader(nullptr), TAG("NetWriter ")
-    {
-        socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
-    }
-    
-    /**
-     Constructor to create the writer with host name. See the
-     constructor of Networker class about handling the parameters.
-     @param hostName The host to send data to.
-     @param portNumber The port to send data to.
-     @param io_s The boost asio io service.
-     */
-    NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-    : Networker(hostName, portNumber, io_s), threader(nullptr), TAG("NetWriter ")
-    {
-        socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
-    }
-    
-    NetworkWriter::~NetworkWriter()
-    {
-    }
-    
-    
-    
-    /** Thread function which does all the relevant work of sending data packages.
-     start() method sets up the networking things, and then threadFunc() is waiting
-     for data packages to arrive. When one arrives, it is notified of it (see write()), and then goes
-     through a round of a loop. In the loop, a package is taken from the queue, packaged
-     in a json data string and then sent over the network. Locks and synchronization are used
-     to make sure the queue is handled by one thread at a time only. Function quits the loop
-     and returns when the stop() is called and the running flag is set to false.
-     */
-    void NetworkWriter::threadFunc() {
-        running = true;
-        if (host.length() > 0 && port > 0) {
-            LOG(INFO) << TAG << "Starting the write loop.";
-            while (running) {
-                guard.lock();
-                if (!msgQueue.empty()) {
-                    LOG(INFO) << TAG << "Stuff in send queue! Reading Package";
-                    Package p = msgQueue.front();
-                    LOG(INFO) << TAG << "Package read. Now convert to json...";
-                    nlohmann::json j = p;
-                    currentlySending = j.dump();
-                    
-                    LOG(INFO) << TAG << "Sending: " << currentlySending;
-                    msgQueue.pop();
-                    LOG(INFO) << TAG << "Just popped, next unlock";
-                    guard.unlock();
-                    LOG(INFO) << TAG << "Determining destination address for " << host << ":" << port;
-                    boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(host), port);
-                    LOG(INFO) << TAG << "Creating message...";
-                    boost::shared_ptr<std::string> message(new std::string(currentlySending));
-                    LOG(INFO) << TAG << "Now sending through socket " << destination.address().to_string() << ":" << destination.port();
-                    socket->async_send_to(boost::asio::buffer(*message), destination,
-                                          boost::bind(&NetworkWriter::handleSend, this,
-                                                      boost::asio::placeholders::error,
-                                                      boost::asio::placeholders::bytes_transferred));
-                    LOG(INFO) << TAG << "Async send delivered";
-                } else {
-                    guard.unlock();
-                    LOG(INFO) << TAG << "Send queue empty, waiting...";
-                    std::unique_lock<std::mutex> ulock(guard);
-                    condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
-                }
-            }
-            LOG(INFO) << TAG << "Shutting down the network writer thread.";
-        }
-    }
-    
-    /** This method is called when the boost async send finishes.
-     @param error Result code of sending, might be an error.
-     @param bytes_transferred How many bytes were sent. */
-    void NetworkWriter::handleSend(const boost::system::error_code& error,
-                                   std::size_t bytes_transferred)
-    {
-        if (error != boost::system::errc::success) {
-            LOG(WARNING) << TAG << "Cannot send data to next node! " << error.value();
-        } else {
-            LOGF(INFO, "Sent %lu bytes through socket.", bytes_transferred);
-        }
-    }
-    
-    /**
-     Starts the network writer.
-     Basically starting the writer starts the thread which is waiting for
-     notification of data put in the send queue by somebody (calling write()).
-     */
-    void NetworkWriter::start() {
-        // Create and run in thread...
-        // Set up the socket
-        // start working
-        if (!running) {
-            LOG(INFO) << TAG << "Starting NetworkWriter.";
-            socket->open(boost::asio::ip::udp::v4());
-            threader = new std::thread(&NetworkWriter::threadFunc, this);
-        }
-    }
-    
-    /** Stops the writer. In practise this ends the loop in the send thread. */
-    void NetworkWriter::stop() {
-        LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
-        if (running) {
-            running = false;
-            condition.notify_all();
-            threader->join();
-            while (!msgQueue.empty()) {
-                msgQueue.pop();
-            }
-            socket->cancel();
-            socket->close();
-            delete threader;
-            threader = nullptr;
-        }
-        LOG(INFO) << TAG << "Exiting NetworkWriter::stop.";
-    }
-    
-    
-    /** Use write to send packages to the next ProcessorNode. The package is
-     put into a queue of packages to send and will be sent when all the previous packages
-     have been sent by the threadFunc().
-     @param data The data package to send.
-     */
-    void NetworkWriter::write(const Package & data)
-    {
-        if (running) {
-            LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
+   
+   /**
+    Constructor to create the writer with host name. See the
+    constructor of Networker class about handling the parameters.
+    @param hostName the host to send data to, including port number.
+    @param io_s The boost asio io service.
+    */
+   NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
+   : Networker(hostName,io_s), threader(nullptr), TAG("NetWriter ")
+   {
+      socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
+   }
+   
+   /**
+    Constructor to create the writer with host name. See the
+    constructor of Networker class about handling the parameters.
+    @param hostName The host to send data to.
+    @param portNumber The port to send data to.
+    @param io_s The boost asio io service.
+    */
+   NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
+   : Networker(hostName, portNumber, io_s), threader(nullptr), TAG("NetWriter ")
+   {
+      socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
+   }
+   
+   NetworkWriter::~NetworkWriter()
+   {
+   }
+   
+   
+   
+   /** Thread function which does all the relevant work of sending data packages.
+    start() method sets up the networking things, and then threadFunc() is waiting
+    for data packages to arrive. When one arrives, it is notified of it (see write()), and then goes
+    through a round of a loop. In the loop, a package is taken from the queue, packaged
+    in a json data string and then sent over the network. Locks and synchronization are used
+    to make sure the queue is handled by one thread at a time only. Function quits the loop
+    and returns when the stop() is called and the running flag is set to false.
+    */
+   void NetworkWriter::threadFunc() {
+      running = true;
+      if (host.length() > 0 && port > 0) {
+         LOG(INFO) << TAG << "Starting the write loop.";
+         while (running) {
             guard.lock();
-            msgQueue.push(data);
-            guard.unlock();
-            // Notify the writer thread there's something to send.
-            condition.notify_one();
-        }
-    }
-    
-    
+            if (!msgQueue.empty()) {
+               LOG(INFO) << TAG << "Stuff in send queue! Reading Package";
+               Package p = msgQueue.front();
+               LOG(INFO) << TAG << "Package read. Now convert to json...";
+               nlohmann::json j = p;
+               currentlySending = j.dump();
+               
+               LOG(INFO) << TAG << "Sending: " << currentlySending;
+               msgQueue.pop();
+               LOG(INFO) << TAG << "Just popped, next unlock";
+               guard.unlock();
+               LOG(INFO) << TAG << "Determining destination address for " << host << ":" << port;
+               boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(host), port);
+               LOG(INFO) << TAG << "Creating message...";
+               boost::shared_ptr<std::string> message(new std::string(currentlySending));
+               LOG(INFO) << TAG << "Now sending through socket " << destination.address().to_string() << ":" << destination.port();
+               socket->async_send_to(boost::asio::buffer(*message), destination,
+                                     boost::bind(&NetworkWriter::handleSend, this,
+                                                 boost::asio::placeholders::error,
+                                                 boost::asio::placeholders::bytes_transferred));
+               LOG(INFO) << TAG << "Async send delivered";
+            } else {
+               guard.unlock();
+               LOG(INFO) << TAG << "Send queue empty, waiting...";
+               std::unique_lock<std::mutex> ulock(guard);
+               condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
+            }
+         }
+         LOG(INFO) << TAG << "Shutting down the network writer thread.";
+      }
+   }
+   
+   /** This method is called when the boost async send finishes.
+    @param error Result code of sending, might be an error.
+    @param bytes_transferred How many bytes were sent. */
+   void NetworkWriter::handleSend(const boost::system::error_code& error,
+                                  std::size_t bytes_transferred)
+   {
+      if (error != boost::system::errc::success) {
+         LOG(WARNING) << TAG << "Cannot send data to next node! " << error.value();
+      } else {
+         LOGF(INFO, "Sent %lu bytes through socket.", bytes_transferred);
+      }
+   }
+   
+   /**
+    Starts the network writer.
+    Basically starting the writer starts the thread which is waiting for
+    notification of data put in the send queue by somebody (calling write()).
+    */
+   void NetworkWriter::start() {
+      // Create and run in thread...
+      // Set up the socket
+      // start working
+      if (!running) {
+         LOG(INFO) << TAG << "Starting NetworkWriter.";
+         socket->open(boost::asio::ip::udp::v4());
+         threader = new std::thread(&NetworkWriter::threadFunc, this);
+      }
+   }
+   
+   /** Stops the writer. In practise this ends the loop in the send thread. */
+   void NetworkWriter::stop() {
+      LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
+      if (running) {
+         running = false;
+         while (!msgQueue.empty()) {
+            msgQueue.pop();
+         }
+         condition.notify_all();
+         socket->cancel();
+         socket->close();
+         if (threader->joinable()) {
+            threader->detach();
+         }
+         delete threader;
+         threader = nullptr;
+      }
+      LOG(INFO) << TAG << "Exiting NetworkWriter::stop.";
+   }
+   
+   
+   /** Use write to send packages to the next ProcessorNode. The package is
+    put into a queue of packages to send and will be sent when all the previous packages
+    have been sent by the threadFunc().
+    @param data The data package to send.
+    */
+   void NetworkWriter::write(const Package & data)
+   {
+      if (running) {
+         LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
+         guard.lock();
+         msgQueue.push(data);
+         guard.unlock();
+         // Notify the writer thread there's something to send.
+         condition.notify_one();
+      }
+   }
+   
+   
 } //namespace
