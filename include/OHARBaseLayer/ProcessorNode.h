@@ -18,6 +18,7 @@
 
 #include <OHARBaseLayer/NetworkReaderObserver.h>
 #include <OHARBaseLayer/Package.h>
+#include <OHARBaseLayer/ProcessorNodeObserver.h>
 
 
 
@@ -46,7 +47,6 @@ namespace OHARBase {
     class DataHandler;
     class DataItem;
     class NodeConfiguration;
-    class ProcessorNodeObserver;
     
     /**
      ProcessorNode is a central class in the architecture. It acts as the Filter
@@ -112,14 +112,9 @@ namespace OHARBase {
         
         void passToNextHandlers(const DataHandler * current, Package & data);
         
-        void showUIMessage(const std::string & message);
-        void logAndShowUIMessage(const std::string & message, bool isWarning = false);
-        
-        void initiateClientAppShutdown();
-        
-    protected:
-        
-        
+        void showUIMessage(const std::string & message, ProcessorNodeObserver::EventType e = ProcessorNodeObserver::EventType::NotificationEvent);
+        void logAndShowUIMessage(const std::string & message, ProcessorNodeObserver::EventType e = ProcessorNodeObserver::EventType::NotificationEvent);
+
         
     private:
         /** The thread function where the handling of the data received by the NetworkReader is done.
@@ -132,6 +127,8 @@ namespace OHARBase {
         /** There is no need to copy ProcessorNodes so delete assignment operator. */
         const ProcessorNode & operator = (const ProcessorNode &) = delete;
         
+        void initiateClientAppShutdown();
+
     protected:
         
         /** The file name of the data file Node uses to read input data. */

@@ -20,7 +20,6 @@
 #include <OHARBaseLayer/DataFileReader.h>
 #include <OHARBaseLayer/NodeConfiguration.h>
 #include <OHARBaseLayer/ConfigurationFileReader.h>
-#include <OHARBaseLayer/ProcessorNodeObserver.h>
 
 namespace OHARBase {
     
@@ -94,7 +93,7 @@ namespace OHARBase {
             } catch (const std::exception & e) {
                 std::stringstream sstream;
                 sstream << "ERROR Could not configure the node with config " << configFile << " because " << e.what();
-                logAndShowUIMessage(sstream.str());
+                logAndShowUIMessage(sstream.str(), ProcessorNodeObserver::EventType::ErrorEvent);
             }
         }
         return success;
@@ -279,7 +278,7 @@ namespace OHARBase {
             stop();
             std::stringstream sstream;
             sstream << "ERROR Something went wrong in starting the node's networking components: " << e.what();
-            logAndShowUIMessage(sstream.str(), true);
+            logAndShowUIMessage(sstream.str(), ProcessorNodeObserver::EventType::ErrorEvent);
             return;
         }
         
@@ -323,7 +322,7 @@ namespace OHARBase {
                                             p.setData(cmd);
                                             passToHandlers(p);
                                         } else {
-                                            showUIMessage("No data file specified in configuration for this node.");
+                                            showUIMessage("Readfile command came, but no data file specified for this node.");
                                         }
                                     } else if (cmd == "quit" || cmd == "shutdown") {
                                         if (cmd == "shutdown") {
@@ -342,7 +341,7 @@ namespace OHARBase {
                             } catch (const std::exception & e) {
                                 std::stringstream sstream;
                                 sstream << "ERROR Something went wrong in node's command handling loop: " << e.what();
-                                logAndShowUIMessage(sstream.str(), true);
+                                logAndShowUIMessage(sstream.str(), ProcessorNodeObserver::EventType::ErrorEvent);
                             }
                         }
                         
@@ -523,7 +522,7 @@ namespace OHARBase {
         } catch (const std::exception & e) {
             std::stringstream sstream;
             sstream << "ERROR Something went wrong in handling a package: " << e.what() << " with id " << boost::uuids::to_string(package.getUuid());
-            logAndShowUIMessage(sstream.str(), true);
+            logAndShowUIMessage(sstream.str(), ProcessorNodeObserver::EventType::ErrorEvent);
         }
     }
     
@@ -547,22 +546,22 @@ namespace OHARBase {
         std::stringstream sstream;
         sstream << "ERROR in incoming data; discarded " << what;
         LOG(WARNING) << sstream.str();
-        showUIMessage(sstream.str());
+        showUIMessage(sstream.str(), ProcessorNodeObserver::EventType::ErrorEvent);
     }
     
     /** Notifies the node observer (assuming it is a (G)UI) of something.
      @param message The message to the user. */
-    void ProcessorNode::showUIMessage(const std::string & message) {
+    void ProcessorNode::showUIMessage(const std::string & message, ProcessorNodeObserver::EventType e) {
         if (observer != nullptr) {
-            observer->NodeEventHappened(ProcessorNodeObserver::EventType::UINotificationEvent, message);
+            observer->NodeEventHappened(e, message);
         }
     }
     
     /** Notifies the node observer (assuming it is a (G)UI) of something and log it too.
      @param message The message to show to user.
      @param isWarning If true, log this as a warning. */
-    void ProcessorNode::logAndShowUIMessage(const std::string & message, bool isWarning) {
-        if (isWarning) {
+    void ProcessorNode::logAndShowUIMessage(const std::string & message, ProcessorNodeObserver::EventType e) {
+        if (e == ProcessorNodeObserver::EventType::WarningEvent || e == ProcessorNodeObserver::EventType::ErrorEvent) {
             LOG(WARNING) << message;
         } else {
             LOG(INFO) << message;

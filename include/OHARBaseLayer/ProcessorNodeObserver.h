@@ -23,8 +23,9 @@ namespace OHARBase {
         /*! Type of the event in the node, notified to the observer. */
         enum EventType {
             ENullEvent, /*!< No event/undefined. */
-            UINotificationEvent, /*!< Normal notification that something of interest to user happened. */
+            NotificationEvent, /*!< Normal notification that something of interest to user happened. */
             ShutDownEvent, /*!< Node notifies the App that it should close down (usually because notification from previous node asks it to.). */
+            WarningEvent, /*!<Something fishy going on, warning the app/user to check out if config, networking or something else is wrong, file is missing etc. */
             ErrorEvent /*!< Something went badly wrong in the node. Notify the app/user. */
         };
         /** Called by the node to notify the app / user that something of interest happened in the node.
