@@ -166,6 +166,10 @@ namespace OHARBase {
         std::list<DataHandler*> handlers;
         /** Flag for indicating is the Node running or not. */
         bool running;
+        /** When node initiates shutdown (not the user/UI), this
+         is set to true by the commandHandlerThread. Then, when
+         stop() is called, observer is notified about the shutdown as the last step. */
+        bool nodeInitiatedShutdownStarted;
         /** Thread for handling the incoming data. */
         std::thread * incomingHandlerThread;
         /** Thread for handling boost io_service */
