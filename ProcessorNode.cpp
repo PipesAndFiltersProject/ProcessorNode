@@ -28,7 +28,8 @@ namespace OHARBase {
      @param aName The name of the processor node.
      @param o The observer of the node who gets event and error notifications of activities in the node. */
     ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
-    : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false), hasIncoming(false), TAG("PNode "), observer(obs)
+    : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false),
+    nodeInitiatedShutdownStarted(false), hasIncoming(false), TAG("PNode "), observer(obs)
     {
         LOG(INFO) << TAG << "Creating ProcessorNode.";
         handlers.push_back(new PingHandler(*this));
@@ -362,41 +363,42 @@ namespace OHARBase {
      started in the start() method. */
     void ProcessorNode::stop() {
         showUIMessage("Stopping the node...");
-        if (running) {
-            running = false;
-            LOG(INFO) << TAG << "Notify all";
-            condition.notify_all();
-            LOG(INFO) << TAG << "Stopped output, stopping io service...";
+        running = false;
+        LOG(INFO) << TAG << "Notify all";
+        condition.notify_all();
+        LOG(INFO) << TAG << "Stopped output, stopping io service...";
+        if (!io_service.stopped()) {
             io_service.stop();
-            LOG(INFO) << TAG << "Stopping input...";
-            if (netInput && netInput->isRunning()) {
-                netInput->stop();
-            }
-            LOG(INFO) << TAG << "Stopped input, now stopping output...";
-            // Close and destroy the sending network object
-            if (netOutput && netOutput->isRunning()) {
-                netOutput->stop();
-            }
-            // Pause the calling thread to allow node & network threads to finish their jobs.
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            if (incomingHandlerThread->joinable()) {
-                LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
-                incomingHandlerThread->detach();
-                delete incomingHandlerThread; incomingHandlerThread = nullptr;
-            }
-            if (commandHandlerThread->joinable()) {
-                LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
-                commandHandlerThread->detach();
-                delete commandHandlerThread; commandHandlerThread = nullptr;
-            }
-            if (ioServiceThread->joinable()) {
-                LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
-                ioServiceThread->detach();
-                delete ioServiceThread; ioServiceThread = nullptr;
-            }
-            
-            LOG(INFO) << TAG << "...threads finished, exiting ProcessorNode::stop";
         }
+        LOG(INFO) << TAG << "Stopping input...";
+        if (netInput && netInput->isRunning()) {
+            netInput->stop();
+        }
+        LOG(INFO) << TAG << "Stopped input, now stopping output...";
+        // Close and destroy the sending network object
+        if (netOutput && netOutput->isRunning()) {
+            netOutput->stop();
+        }
+        // Pause the calling thread to allow node & network threads to finish their jobs.
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if (incomingHandlerThread && incomingHandlerThread->joinable()) {
+            LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
+            incomingHandlerThread->detach();
+            delete incomingHandlerThread; incomingHandlerThread = nullptr;
+        }
+        if (commandHandlerThread && commandHandlerThread->joinable()) {
+            LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
+            commandHandlerThread->detach();
+            delete commandHandlerThread; commandHandlerThread = nullptr;
+        }
+        if (ioServiceThread && ioServiceThread->joinable()) {
+            LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
+            ioServiceThread->detach();
+            delete ioServiceThread; ioServiceThread = nullptr;
+        }
+        
+        LOG(INFO) << TAG << "...threads finished, exiting ProcessorNode::stop";
+        
         showUIMessage("...Node stopped.");
         if (nodeInitiatedShutdownStarted) {
             initiateClientAppShutdown();
