@@ -79,7 +79,7 @@ namespace OHARBase {
      */
     class ProcessorNode final : public NetworkReaderObserver {
     public:
-        ProcessorNode(const std::string & aName, ProcessorNodeObserver * o = nullptr);
+        ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs);
         virtual ~ProcessorNode();
         
         bool configure(const std::string & configFile);

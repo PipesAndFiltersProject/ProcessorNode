@@ -25,7 +25,7 @@ namespace OHARBase {
     
     /** Constructor for the processor node.
      @param aName The name of the processor node.
-     @param o The observer of the node who gets event and error notifications of activities in the node. */
+     @param obs The observer of the node who gets event and error notifications of activities in the node. */
     ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
     : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false),
     nodeInitiatedShutdownStarted(false), hasIncoming(false), TAG("PNode "), observer(obs)
@@ -550,7 +550,8 @@ namespace OHARBase {
     }
     
     /** Notifies the node observer (assuming it is a (G)UI) of something.
-     @param message The message to the user. */
+     @param message The message to the user.
+     @param e Type of the event. */
     void ProcessorNode::showUIMessage(const std::string & message, ProcessorNodeObserver::EventType e) {
         if (observer != nullptr) {
             observer->NodeEventHappened(e, message);
@@ -559,7 +560,7 @@ namespace OHARBase {
     
     /** Notifies the node observer (assuming it is a (G)UI) of something and log it too.
      @param message The message to show to user.
-     @param isWarning If true, log this as a warning. */
+     @param e Type of the event. */
     void ProcessorNode::logAndShowUIMessage(const std::string & message, ProcessorNodeObserver::EventType e) {
         if (e == ProcessorNodeObserver::EventType::WarningEvent || e == ProcessorNodeObserver::EventType::ErrorEvent) {
             LOG(WARNING) << message;
