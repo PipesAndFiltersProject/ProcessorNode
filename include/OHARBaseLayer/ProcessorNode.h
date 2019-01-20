@@ -20,6 +20,33 @@
 #include <OHARBaseLayer/Package.h>
 #include <OHARBaseLayer/ProcessorNodeObserver.h>
 
+/** \mainpage
+ 
+ This documentation describes a library to develop distributed system of Nodes.
+ 
+ The library needs the following tools and uses the following other external libraries:
+ 
+  -# A C++ compiler supporting C++ 14 and STL.
+  -# cmake for building the library.
+  -# boost 1.68.0 or newer. You need to build system library from boost. Build using c++14 (e.g. b2 cxxflags="-std=c++14".). For more information, see boost getting started guide.
+  -# nlohmann::json for parsing and creating JSON.
+  -# g3logger for logging events in all components of this software. Also requires C++ v 14.
+ 
+ You can build the library like this (in the root dir of the lib):
+ 
+ -# mkdir build
+ -# cd build
+ -# cmake ..
+ -# make
+ -# sudo make install
+ 
+ The last step copies the library binary to /usr/local/lib and headers to /usr/local/include in *nix based environments.
+ 
+ Then you need to implement another layer on top for applicaton specific functionality and/or an app that utilises the library, communicating with other apps over the net. For an example, see StudentLayer library and BasicInfoGUI node and a sample configuration/installation in the StudentPassing system.
+ 
+ (c) Antti Juustila, 2014-2019.
+ 
+ */
 
 
 /** @brief Namespace contains basic classes for

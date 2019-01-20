@@ -27,7 +27,7 @@ namespace OHARBase {
 	 The initialization happens in the constructors (where the addresses are set) and in
 	 start() method.
 	 @author Antti Juustila
-	 @todo Support for IPv6.
+	 @todo Support for IPv6 and secure sockets / secure (encrypted) data.
 	 */
 	class Networker {
 	public:

@@ -29,9 +29,10 @@ namespace OHARBase {
      Package also has a type, indicating is the package containing actual data to be
      handled, or is the package containing a control message. Control messages influence
      on the way the Node behaves. These include e.g. shutting down the node.
-     @todo Add a "corrupt" flat for packages that have bad content. These packages
+     @todo Add a "corrupt" flag for packages that have bad content. These packages
      are just passed through the Filters, logging their presence, and they are not
-     handled by any Handler.
+     handled by any Handler. Would aid in debugging/testing since corrupt packages would
+     not just disappear.
      @author Antti Juustila
      */
     class Package {
