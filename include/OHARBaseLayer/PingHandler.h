@@ -1,13 +1,13 @@
 //
 //  PingHandler.h
-//  PipesAndFiltersStudentNode
+//  PipesAndFiltersNode
 //
 //  Created by Antti Juustila on 25.11.2013.
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersStudentNode__PingHandler__
-#define __PipesAndFiltersStudentNode__PingHandler__
+#ifndef __PipesAndFiltersNode__PingHandler__
+#define __PipesAndFiltersNode__PingHandler__
 
 
 #include <OHARBaseLayer/DataHandler.h>
@@ -40,4 +40,4 @@ namespace OHARBase {
 	
 }
 
-#endif /* defined(__PipesAndFiltersStudentNode__PingHandler__) */
+#endif /* defined(__PipesAndFiltersNode__PingHandler__) */

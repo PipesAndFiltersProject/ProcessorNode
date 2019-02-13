@@ -1,13 +1,12 @@
 //
 //  Package.h
-//  PipesAndFiltersStudentNode
 //
 //  Created by Antti Juustila on 28.11.2013.
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersStudentNode__Package__
-#define __PipesAndFiltersStudentNode__Package__
+#ifndef __PipesAndFiltersNode__Package__
+#define __PipesAndFiltersNode__Package__
 
 #include <string>
 #include <boost/uuid/uuid.hpp>
@@ -69,7 +68,6 @@ namespace OHARBase {
         bool operator == (const std::string & str) const;
         
         static const std::string & separator();
-        //		bool parse(const std::string & buffer);
         
         const std::string & getTypeAsString() const;
         void setTypeFromString(const std::string & typeStr);
@@ -114,4 +112,4 @@ namespace OHARBase {
     
     
 } //namespace
-#endif /* defined(__PipesAndFiltersStudentNode__Package__) */
+#endif /* defined(__PipesAndFiltersNode__Package__) */
