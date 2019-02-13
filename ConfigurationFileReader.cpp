@@ -38,20 +38,14 @@ namespace OHARBase {
 		if (str.length() > 0) {
          LOG(INFO) << TAG << "Parsing line: " << str;
 			item = new ConfigurationDataItem();
-            try {
-                if (!item->parse(str, contentType)) {
-                    LOG(WARNING) << TAG << "Configuration failed to parse!";
-                    delete item;
-                    item = nullptr;
-                }
-            } catch (const std::exception & e) {
-                delete item;
-                item = nullptr;
-                LOG(WARNING) << TAG << "Exeption in configuration parsing!";
-            }
+         if (!item->parse(str, contentType)) {
+            LOG(WARNING) << TAG << "Configuration failed to parse!";
+            delete item;
+            item = nullptr;
+            throw std::runtime_error("Configuration file corrupt");
+         }
 		}
 		return item;
 	}
-
-	
-}
+   
+} // namespace
