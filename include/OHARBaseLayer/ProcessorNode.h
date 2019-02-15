@@ -142,7 +142,8 @@ namespace OHARBase {
         void showUIMessage(const std::string & message, ProcessorNodeObserver::EventType e = ProcessorNodeObserver::EventType::NotificationEvent);
         void logAndShowUIMessage(const std::string & message, ProcessorNodeObserver::EventType e = ProcessorNodeObserver::EventType::NotificationEvent);
 
-        
+       std::string getConfigItemValue(const std::string & itemName) const;
+       
     private:
         /** The thread function where the handling of the data received by the NetworkReader is done.
          This thread is started in the Node's start() method. Locks are used to guard access to the

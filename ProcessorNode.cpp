@@ -99,6 +99,10 @@ namespace OHARBase {
       return success;
    }
    
+   std::string ProcessorNode::getConfigItemValue(const std::string & itemName) const {
+      return config->getValue(itemName);
+   }
+   
    /** Sets the address of the input source for the Node. This is the hostname and port where
     data is read. In practice, the host is always the local host, 127.0.0.1. Node listens
     for arrivind data from this port and then handles it using the DataHandler objects.
