@@ -252,6 +252,20 @@ namespace OHARBase {
     thread to handle user commands. After successfully starting the node, method returns to
     caller and the ProcessorNode threads handle commands and incoming data processing. */
    void ProcessorNode::start() {
+      
+      /*
+       Steps made here to start the node (can be used to draw an UML activity diagram):
+       - check if netinput exists
+         if yes, start it
+       - check if netoutput exist
+         if yes, start it
+       - node is now running
+       - check again if netinput exist
+         if yes, start the incoming handler thread  (runs the threadFunc method, check it out)
+       - start the ioservice thread (needed in using boost::asio for networking)
+       - start the command handling thread
+       And that is it; node has been started.
+      */
       if (running) return;
       
       nodeInitiatedShutdownStarted = false;
@@ -300,6 +314,27 @@ namespace OHARBase {
       //      });
       
       LOG(INFO) << "Starting command handling loop.";
+      /*
+       What happens here (can be used to draw the activity diagram):
+       - while the node is running:
+       - waits for commands; to be awoken (by someone calling condition.notify_all).
+       - this may take time (minutes, hours, days,...) -- until a command arives from the user or network package.
+       - when awoken, then check what the command was:
+       - if it is "ping" command then
+       create a package and send the package with the ping command to next node.
+       show a message in the UI that a ping message came and was sent away too.
+       - if it is "readfile" command then
+       create a package and send the package with the readfile command to next node.
+       pass the package with the command to handlers. Maybe one of them will handle it and do the actual file reading.
+       - if it is "quit" or "shutdown" then
+       - if it is "shutdown" then
+       send the shutdown command ahead with a package to the next node.
+       - end if
+       - then stop the node from running and
+       - notify the user that node will close and
+       - notify all other threads that they should also start packing the whistles in bags
+       - go to start (to while...)
+       */
       commandHandlerThread = new std::thread([this] {
          while (running && ((netInput && netInput->isRunning()) || (netOutput && netOutput->isRunning())))
          {
@@ -464,6 +499,25 @@ namespace OHARBase {
     and the quit command is passsed to the command handling thread to shut down the node.
     */
    void ProcessorNode::threadFunc() {
+      /*
+      What is happening here in this thread...
+       - while (1) the thread (node) is running:
+       - wait for someone to wake the thread (someone calls condition.notify_all)...
+       - waiting is over. Check if we are still running
+         (someone might have set the running to false while waiting the thread to be awoken)
+       - if running, then get the next package from the network reader
+          - while (2) the package is not empty (and we are still running)
+            if the package is a control package and the command is "shutdown"
+               - send the shutdown command ahead
+               - set the current command to be "quit"
+               - awaken the other threads (especially command handler; it will then handle the quit command)
+               - break; stop handling any more packages since we are closing the shop anyways.
+            else
+               - pass the package to handlers
+               - get the next package
+            loop to while (2) to check if the package was empty
+       - loop to while (1) to wait for further notifications of incoming packags.
+      */
       while (running) {
          LOG(INFO) << TAG << "Receive queue empty, waiting...";
          

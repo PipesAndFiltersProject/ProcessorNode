@@ -106,6 +106,7 @@ namespace OHARBase {
      */
     class ProcessorNode final : public NetworkReaderObserver {
     public:
+       // MARK: - Setup
         ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs);
         virtual ~ProcessorNode();
         
@@ -115,6 +116,7 @@ namespace OHARBase {
         void setOutputSink(const std::string & hostName);
         void setInputSource(const std::string & hostName, int portNumber);
         void setOutputSink(const std::string & hostName, int portNumber);
+       
         void setDataFileName(const std::string & fileName);
         void setOutputFileName(const std::string & fileName);
         
@@ -122,7 +124,8 @@ namespace OHARBase {
         const std::string & getOutputFileName() const;
         
         void addHandler(DataHandler * h);
-        
+
+       // MARK: - 
         const std::string & getName() const;
         
         void start();

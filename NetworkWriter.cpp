@@ -63,6 +63,20 @@ namespace OHARBase {
     and returns when the stop() is called and the running flag is set to false.
     */
    void NetworkWriter::threadFunc() {
+      /*
+       What is happening here (can be used to draw an activity diagram)...
+       - set the write's state to running.
+       - check if we have an address to send data to
+         - while writer is running
+            - if there are messages in the queue
+               read the message package from the queue
+               convert the data from there to JSON
+               determine the address to send data to
+               send it ahead
+            - if there are no messages in the queue
+               wait for someone to awake the thread to send messages.
+         - loop to while (above)
+      */
       running = true;
       if (host.length() > 0 && port > 0) {
          LOG(INFO) << TAG << "Starting the write loop.";
