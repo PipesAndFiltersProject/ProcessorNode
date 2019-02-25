@@ -335,6 +335,7 @@ namespace OHARBase {
        - notify all other threads that they should also start packing the whistles in bags
        - go to start (to while...)
        */
+      //MARK: Command handler thread.
       commandHandlerThread = new std::thread([this] {
          while (running && ((netInput && netInput->isRunning()) || (netOutput && netOutput->isRunning())))
          {
