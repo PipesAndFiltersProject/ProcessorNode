@@ -66,7 +66,7 @@ namespace OHARBase {
         const Package & operator = (Package && p);
         bool operator == (const Package & pkg) const;
         bool operator == (const std::string & str) const;
-        
+       
         static const std::string & separator();
         
         const std::string & getTypeAsString() const;
@@ -97,7 +97,8 @@ namespace OHARBase {
         
         /** The character separator used to separate the data items in the string
          representation of the data. Used when data is received as string and when
-         data is sent to the next Node. */
+         data is sent to the next Node.
+         @todo Remove separatorStr since it is not used after moving to JSON.*/
         static const std::string separatorStr;
         /** Textual representation of the package type Package::Control. */
         static const std::string controlStr;

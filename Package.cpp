@@ -211,7 +211,10 @@ namespace OHARBase {
         return data == str;
     }
     
-    
+   
+      /** Separator string for data transfer between nodes.
+       @todo Remove separatorStr since it is not used after moving to JSON.
+       */
     const std::string & Package::separator() {
         return separatorStr;
     }
