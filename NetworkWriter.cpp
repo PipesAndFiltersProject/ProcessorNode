@@ -23,6 +23,8 @@
 
 namespace OHARBase {
    
+   const std::string NetworkWriter::TAG{"NetWriter "};
+   
    /**
     Constructor to create the writer with host name. See the
     constructor of Networker class about handling the parameters.
@@ -30,7 +32,7 @@ namespace OHARBase {
     @param io_s The boost asio io service.
     */
    NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
-   : Networker(hostName,io_s), threader(nullptr), TAG("NetWriter ")
+   : Networker(hostName,io_s), threader(nullptr)
    {
       socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
    }
@@ -43,7 +45,7 @@ namespace OHARBase {
     @param io_s The boost asio io service.
     */
    NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-   : Networker(hostName, portNumber, io_s), threader(nullptr), TAG("NetWriter ")
+   : Networker(hostName, portNumber, io_s), threader(nullptr)
    {
       socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
    }

@@ -215,7 +215,7 @@ namespace OHARBase {
         /** Command entered by the user or received from the previous node. */
         std::string command;
         /** Logging tag. */
-        const std::string TAG;
+        static const std::string TAG;
         
         /** Observer to whom events in the node are notified to. */
         ProcessorNodeObserver * observer;

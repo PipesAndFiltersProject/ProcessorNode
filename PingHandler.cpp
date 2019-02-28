@@ -13,14 +13,16 @@
 #include <OHARBaseLayer/Package.h>
 
 namespace OHARBase {
-    
+   
+   const std::string PingHandler::TAG{"PingHandler "};
+   
     /**
      Constructs a PingHandler object. Ping handler must now about the ProcessorNode
      in order to forward the ping message to the next ProcessorNode.
      @param myNode The processor node to use to forward the ping message.
      */
     PingHandler::PingHandler(ProcessorNode & myNode)
-    : node(myNode), TAG("PingHandler ")
+    : node(myNode)
     {
     }
     

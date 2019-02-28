@@ -34,7 +34,7 @@ namespace OHARBase {
 		/** The processor node used to forward the ping message. */
 		ProcessorNode & node;
 		/** The tag used in the logging to indicate which object is logging now. */
-		const std::string TAG;
+		static const std::string TAG;
 	};
 	
 	

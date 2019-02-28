@@ -24,7 +24,9 @@
 
 
 namespace OHARBase {
-    
+   
+   const std::string NetworkReader::TAG{"NetReader "};
+   
     /**
      Constructor to create the reader with host name. See the
      constructor of Networker class about handling the parameters.
@@ -37,8 +39,7 @@ namespace OHARBase {
                                  NetworkReaderObserver & obs,
                                  boost::asio::io_service & io_s)
     :		Networker(hostName, io_s),
-    observer(obs),
-    TAG("NetReader ")
+    observer(obs)
     {
         using namespace boost::asio::ip;
         remote_endpoint = std::unique_ptr<udp::endpoint>(new boost::asio::ip::udp::endpoint(udp::v4(), port));
@@ -59,8 +60,7 @@ namespace OHARBase {
                                  NetworkReaderObserver & obs,
                                  boost::asio::io_service & io_s)
     :		Networker(hostName, portNumber, io_s),
-    observer(obs),
-    TAG("NetworkReader")
+    observer(obs)
     {
         using namespace boost::asio::ip;
         remote_endpoint = std::unique_ptr<udp::endpoint>(new udp::endpoint(udp::v4(), port));

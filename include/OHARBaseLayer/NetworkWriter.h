@@ -56,7 +56,7 @@ namespace OHARBase {
 		std::condition_variable condition;
 		std::thread * threader;
 		/** Logging tag. */
-		const std::string TAG;
+		static const std::string TAG;
 		
 	};
 	

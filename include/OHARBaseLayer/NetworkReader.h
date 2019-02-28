@@ -61,7 +61,7 @@ namespace OHARBase {
 		NetworkReaderObserver & observer;
 		
 		/** Tag for logging. */
-		std::string TAG;
+		static const std::string TAG;
 		
 		/** The address to get data from or send to. */
 		std::unique_ptr<boost::asio::ip::udp::endpoint> remote_endpoint;
