@@ -30,7 +30,8 @@ namespace OHARBase {
     @param obs The observer of the node who gets event and error notifications of activities in the node. */
    ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
    : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false),
-   nodeInitiatedShutdownStarted(false), hasIncoming(false), observer(obs)
+   nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
+   commandHandlerThread(nullptr), hasIncoming(false), observer(obs)
    {
       LOG(INFO) << TAG << "Creating ProcessorNode.";
       handlers.push_back(new PingHandler(*this));
@@ -102,6 +103,9 @@ namespace OHARBase {
    }
    
    std::string ProcessorNode::getConfigItemValue(const std::string & itemName) const {
+      if (!config) {
+         throw std::runtime_error("No configuration.");
+      }
       return config->getValue(itemName);
    }
    
@@ -407,7 +411,7 @@ namespace OHARBase {
       running = false;
       LOG(INFO) << TAG << "Notify all";
       condition.notify_all();
-      LOG(INFO) << TAG << "Stopped output, stopping io service...";
+      LOG(INFO) << TAG << "Stopping io service...";
       if (!io_service.stopped()) {
          io_service.stop();
       }
@@ -420,8 +424,10 @@ namespace OHARBase {
       if (netOutput && netOutput->isRunning()) {
          netOutput->stop();
       }
+      LOG(INFO) << TAG << "Input & Output stopped, now a pause.";
       // Pause the calling thread to allow node & network threads to finish their jobs.
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      LOG(INFO) << TAG << "And after pause, detach from the threads and destroy them.";
       if (incomingHandlerThread && incomingHandlerThread->joinable()) {
          LOG(INFO) << TAG << "Waiting for the incomingHandlerThread thread...";
          incomingHandlerThread->detach();
