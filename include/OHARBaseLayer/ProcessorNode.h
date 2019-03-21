@@ -211,9 +211,11 @@ namespace OHARBase {
       /** Flag which is used to wait for incoming data. */
       bool hasIncoming;
       
-      /** Command entered by the user or received from the previous node.
-       TODO: command can be changed by man thread (user) and netinput handler thread. Should use mutex to guard it. */
+      /** Command entered by the user or received from the previous node. */
       std::string command;
+      /**  Command can be changed by man thread (user) and netinput handler thread. Must use mutex to guard it. */
+      std::mutex commandGuard;
+      
       /** Logging tag. */
       static const std::string TAG;
       

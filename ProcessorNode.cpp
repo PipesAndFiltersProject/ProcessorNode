@@ -349,7 +349,9 @@ namespace OHARBase {
             {
                std::unique_lock<std::mutex> ulock(guard);
                condition.wait(ulock, [this] {
+                  commandGuard.lock();
                   std::string cmd = command;
+                  commandGuard.unlock();
                   if (cmd.length() > 0) {
                      LOG(INFO) << "Command received: " << cmd;
                      try {
@@ -456,7 +458,9 @@ namespace OHARBase {
     started in the start() method.
     @param aCommand The command received from the user/app. */
    void ProcessorNode::handleCommand(const std::string & aCommand) {
+      commandGuard.lock();
       command = aCommand;
+      commandGuard.unlock();
       LOG(INFO) << "Received a command " << command;
       condition.notify_all();
    }
@@ -548,7 +552,9 @@ namespace OHARBase {
                      showUIMessage("Got shutdown command, forwarding and initiating shutdown.");
                      sendData(package);
                      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                     commandGuard.lock();
                      command = "quit";
+                     commandGuard.unlock();
                      condition.notify_all();
                      // Do not handle possible remaining packages after shutdown message.
                      break;
