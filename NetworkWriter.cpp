@@ -177,6 +177,7 @@ namespace OHARBase {
          LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
          guard.lock();
          msgQueue.push(data);
+         LOG(INFO) << "METRICS packages in outgoing queue: " << msgQueue.size();
          guard.unlock();
          // Notify the writer thread there's something to send.
          condition.notify_one();

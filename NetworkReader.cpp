@@ -151,6 +151,7 @@ namespace OHARBase {
       guard.lock();
       Package result;
       if (!msgQueue.empty()) {
+         LOG(INFO) << "METRICS packages in incoming queue: " << msgQueue.size();
          result = std::move(msgQueue.front());
          msgQueue.pop();
       }
