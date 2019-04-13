@@ -28,7 +28,7 @@ namespace OHARBase {
 		NodeConfiguration() = default;
 		virtual ~NodeConfiguration();
 		
-		virtual void handleNewItem(DataItem * item) override;
+      virtual void handleNewItem(std::unique_ptr<DataItem> item) override;
 		
 		std::string getValue(const std::string &configName) const;
 		

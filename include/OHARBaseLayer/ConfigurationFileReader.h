@@ -40,7 +40,7 @@ namespace OHARBase {
 	public:
 		ConfigurationFileReader(DataReaderObserver & obs);
 		
-		virtual DataItem * parse(const std::string & str, const std::string & contentType) override;
+      virtual std::unique_ptr<DataItem> parse(const std::string & str, const std::string & contentType) override;
 		
 	private:
 		static const std::string TAG;

@@ -11,10 +11,12 @@
 
 #include <list>
 
+#include <OHARBaseLayer/DataFileReader.h>
+#include <OHARBaseLayer/DataItem.h>
+
 namespace OHARBase {
 	
 	//Forward declarations.
-	class DataItem;
 	class DataReaderObserver;
 	
 	/** An abstract class defining the interface for reading data from
@@ -45,7 +47,7 @@ namespace OHARBase {
 		 the str is expected to contain.
 		 @return The DataItem object parsed from the string. Null if no data was successfully parsed.
 		 */
-		virtual DataItem * parse(const std::string & str, const std::string & contentType) = 0;
+      virtual std::unique_ptr<DataItem> parse(const std::string & str, const std::string & contentType) = 0;
 		
 		/** The observer gets a notification after each parsed line where a DataItem was created. */
 		DataReaderObserver & observer;

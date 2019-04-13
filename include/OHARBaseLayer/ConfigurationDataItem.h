@@ -35,7 +35,7 @@ namespace OHARBase {
         
         virtual bool parse(const std::string & fromString, const std::string & contentType) override;
         virtual bool addFrom(const DataItem & another) override;
-        virtual DataItem * copy() const override;
+        virtual std::unique_ptr<DataItem> clone() const override;
         
     private:
         /** The name of the configuration item. */

@@ -26,10 +26,11 @@ namespace OHARBase {
     @param item The new configuration item to add.
     @todo Check if an item with the same name exists already and replace it with this one.
     */
-	void NodeConfiguration::handleNewItem(DataItem * item) {
-		ConfigurationDataItem * d = dynamic_cast<ConfigurationDataItem*>(item);
+	void NodeConfiguration::handleNewItem(std::unique_ptr<DataItem> item) {
+		ConfigurationDataItem * d = dynamic_cast<ConfigurationDataItem*>(item.get());
 		if (d) {
 			configItems.push_back(d);
+         item.release();
 		}
 	}
 	

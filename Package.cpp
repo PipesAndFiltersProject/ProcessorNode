@@ -35,18 +35,19 @@ namespace OHARBase {
    Package::Package(const Package & p)
    : uid(p.uid), type(p.type), data(p.data), dataItem(nullptr)
    {
-      setDataItem(p.getDataItem());
+      if (p.dataItem) {
+         setDataItem(p.dataItem->clone());
+      }
    }
    
    /** Move constructor for Package. Moves data from
     the passed object, transferring the ownership to this object.
     */
    Package::Package(Package && p)
-   : uid(std::move(p.uid)), type(std::move(p.type)), data(std::move(p.data))
+   : uid(std::move(p.uid)), type(std::move(p.type)), data(std::move(p.data)), dataItem(std::move(p.dataItem))
    {
-      dataItem = std::move(p.dataItem);
-      delete p.dataItem;
-      p.dataItem = nullptr;
+      // delete p.dataItem;
+      // p.dataItem = nullptr;
    }
    
    /** A constructor giving an uuid for the otherwise empty package.
@@ -75,7 +76,7 @@ namespace OHARBase {
    
    /** Destructor deletes the contained dataItem. */
    Package::~Package() {
-      delete dataItem;
+      // delete dataItem;
    }
    
    
@@ -152,7 +153,7 @@ namespace OHARBase {
     been parsed from the data member variable.
     @return The pointer to the data item object. */
    const DataItem * Package::getDataItem() const {
-      return dataItem;
+      return dataItem.get();
    }
    
    /** Use for getting the modifiable pointer to the parsed,
@@ -160,26 +161,28 @@ namespace OHARBase {
     is no data or it has not been parsed from the data member variable.
     @return The pointer to the data item object. */
    DataItem * Package::getDataItem() {
-      return dataItem;
+      return dataItem.get();
    }
    
    /** Sets the new data item for this package, deleting the old one (if any).
     @param item The new dataitem for this package. DataItem is copied, so caller must handle
     the parameter object lifetime. */
-   void Package::setDataItem(const DataItem * item) {
-      if (dataItem) {
-         delete dataItem;
-         dataItem = nullptr;
-      }
-      if (item) {
-         dataItem = item->copy();
-      }
+   void Package::setDataItem(std::unique_ptr<DataItem> item) {
+      dataItem.reset();
+      dataItem = std::move(item);
+//      if (dataItem) {
+//         delete dataItem;
+//         dataItem = nullptr;
+//      }
+//      if (item) {
+//         dataItem = item->copy();
+//      }
    }
    
    /** Use to query if package is empty. Package is empty if it has no type and dataItem is nullptr.
     @return Returns true if package is empty. */
    bool Package::isEmpty() const {
-      return (type == NoType && dataItem == nullptr);
+      return (type == NoType && !dataItem);
    }
    
    const Package & Package::operator = (const Package & p) {
@@ -187,7 +190,9 @@ namespace OHARBase {
          uid = p.uid;
          type = p.type;
          data = p.data;
-         this->setDataItem(p.getDataItem());
+         if (p.dataItem) {
+            this->setDataItem(p.dataItem->clone());
+         }
       }
       return *this;
    }

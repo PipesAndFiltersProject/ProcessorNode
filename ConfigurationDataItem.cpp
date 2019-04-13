@@ -98,8 +98,8 @@ namespace OHARBase {
      Creates a new copy of this configuration data item.
      @returns a new copy of this configuration data item.
      */
-    DataItem * ConfigurationDataItem::copy() const {
-        return new ConfigurationDataItem(*this);
+    std::unique_ptr<DataItem> ConfigurationDataItem::clone() const {
+       return std::make_unique<ConfigurationDataItem>(*this);
     }
     
     

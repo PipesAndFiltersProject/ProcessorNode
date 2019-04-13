@@ -33,15 +33,14 @@ namespace OHARBase {
     @param contentType The type of the content in this item.
     @returns The configuration data item read from the line. Null if failed to parse the configuration item.
     */
-	OHARBase::DataItem * OHARBase::ConfigurationFileReader::parse(const std::string & str, const std::string & contentType) {
-		ConfigurationDataItem * item = nullptr;
+	std::unique_ptr<DataItem> OHARBase::ConfigurationFileReader::parse(const std::string & str, const std::string & contentType) {
+		std::unique_ptr<DataItem> item(nullptr);
 		if (str.length() > 0) {
          LOG(INFO) << TAG << "Parsing line: " << str;
-			item = new ConfigurationDataItem();
+         item = std::make_unique<ConfigurationDataItem>();
          if (!item->parse(str, contentType)) {
             LOG(WARNING) << TAG << "Configuration failed to parse!";
-            delete item;
-            item = nullptr;
+            item.release();
             throw std::runtime_error("Configuration file corrupt");
          }
 		}

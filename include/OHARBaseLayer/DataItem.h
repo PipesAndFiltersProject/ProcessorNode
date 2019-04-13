@@ -49,7 +49,7 @@ public:
 	/** The copy method implements the Prototype design pattern. It is useful to be able
 	 to copy e.g. permanent data objects from temporary data objects. 
 	 @return Returns a new copy of an exiting object. */
-   virtual DataItem * copy() const = 0;
+   virtual std::unique_ptr<DataItem> clone() const = 0;
    
    bool operator == (const DataItem & item) const;
    bool operator != (const DataItem & item) const;
