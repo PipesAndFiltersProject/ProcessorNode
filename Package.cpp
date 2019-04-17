@@ -6,11 +6,13 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-
-#include <boost/algorithm/string.hpp>
 #include <vector>
 
+
+#include <boost/algorithm/string.hpp>
 #include <boost/uuid/uuid_io.hpp>
+
+#include <g3log/g3log.hpp>
 
 #include <OHARBaseLayer/Package.h>
 #include <OHARBaseLayer/DataItem.h>
@@ -18,42 +20,37 @@
 
 namespace OHARBase {
    
-   
-   const std::string Package::separatorStr("\\");
    const std::string Package::controlStr = "control";
    const std::string Package::dataStr = "data";
-   const std::string Package::noTypeStr = "";
+   const std::string Package::emptyString = "";
    
    /** Default constructor for Package. Generates a random uuid for the Package. */
    Package::Package()
-   : uid(boost::uuids::random_generator()()), type(Package::Type::NoType), dataItem(nullptr)
+   : uid(boost::uuids::random_generator()()), type(Package::Type::NoType), payload("")
    {
    }
    
    /** Copy constructor for Package. Copies the passed object.
     @param p The package to copy from. */
    Package::Package(const Package & p)
-   : uid(p.uid), type(p.type), data(p.data), dataItem(nullptr)
+   : uid(p.uid), type(p.type), payload("")
    {
-      if (p.dataItem) {
-         setDataItem(p.dataItem->clone());
-      }
+      setPayloadVariant(p.payload);
    }
    
    /** Move constructor for Package. Moves data from
     the passed object, transferring the ownership to this object.
     */
    Package::Package(Package && p)
-   : uid(std::move(p.uid)), type(std::move(p.type)), data(std::move(p.data)), dataItem(std::move(p.dataItem))
+   : uid(std::move(p.uid)), type(std::move(p.type))
    {
-      // delete p.dataItem;
-      // p.dataItem = nullptr;
+      payload = std::move(p.payload);
    }
    
    /** A constructor giving an uuid for the otherwise empty package.
     @param id The uuid for the package. */
    Package::Package(const boost::uuids::uuid & id)
-   : uid(id), type(Package::Type::NoType), dataItem(nullptr)
+   : uid(id), type(Package::Type::NoType), payload("")
    {
    }
    
@@ -61,7 +58,7 @@ namespace OHARBase {
     @param ptype The type for the package.
     @param d The data contents of the package. */
    Package::Package(Type ptype, const std::string & d)
-   : uid(boost::uuids::random_generator()()), type(ptype), data(d), dataItem(nullptr)
+   : uid(boost::uuids::random_generator()()), type(ptype), payload(d)
    {
    }
    
@@ -70,13 +67,12 @@ namespace OHARBase {
     @param ptype The type of the data (control or data package).
     @param d The data contents of the package. */
    Package::Package(const boost::uuids::uuid & id, Type ptype, const std::string & d)
-   : uid(id), type(ptype), data(d), dataItem(nullptr)
+   : uid(id), type(ptype), payload(d)
    {
    }
    
-   /** Destructor deletes the contained dataItem. */
+   /** Destructor. */
    Package::~Package() {
-      // delete dataItem;
    }
    
    
@@ -117,7 +113,7 @@ namespace OHARBase {
             return dataStr;
          }
          default: {
-            return noTypeStr;
+            return emptyString;
          }
       }
    }
@@ -137,73 +133,83 @@ namespace OHARBase {
    }
    
    /** Get the unparsed data contents for the Package.
-    @return the data of the package. */
-   const std::string & Package::getData() const {
-      return data;
+    @return the data of the package, empty string if parsed to Dataitem. */
+   const std::string & Package::getPayloadString() const {
+      auto item = std::get_if<std::string>(&payload);
+      if (item) {
+         return *item;
+      }
+      return emptyString;
+
    }
    
    /** Sets the unparsed data for the Package.
     @param d The data for this Package. */
-   void Package::setData(const std::string & d) {
-      data = d;
+   void Package::setPayload(const std::string & d) {
+      payload = d;
    }
    
    /** Use for getting the parsed, structured DataItem of
     the Package. May be null if there is no data or it has not
     been parsed from the data member variable.
     @return The pointer to the data item object. */
-   const DataItem * Package::getDataItem() const {
-      return dataItem.get();
+   const DataItem * Package::getPayloadObject() const {
+      auto item = std::get_if<std::unique_ptr<DataItem>>(&payload);
+      if (item) {
+         return item->get();
+      }
+      return nullptr;
    }
    
    /** Use for getting the modifiable pointer to the parsed,
     structured DataItem of the Package. May be null if there
     is no data or it has not been parsed from the data member variable.
     @return The pointer to the data item object. */
-   DataItem * Package::getDataItem() {
-      return dataItem.get();
+   DataItem * Package::getPayloadObject() {
+      auto item = std::get_if<std::unique_ptr<DataItem>>(&payload);
+      if (item) {
+         return item->get();
+      }
+      return nullptr;
    }
    
    /** Sets the new data item for this package, deleting the old one (if any).
     @param item The new dataitem for this package. DataItem is copied, so caller must handle
     the parameter object lifetime. */
-   void Package::setDataItem(std::unique_ptr<DataItem> item) {
-      dataItem.reset();
-      dataItem = std::move(item);
-//      if (dataItem) {
-//         delete dataItem;
-//         dataItem = nullptr;
-//      }
-//      if (item) {
-//         dataItem = item->copy();
-//      }
+   void Package::setPayload(std::unique_ptr<DataItem> item) {
+      payload = std::move(item);
    }
    
    /** Use to query if package is empty. Package is empty if it has no type and dataItem is nullptr.
     @return Returns true if package is empty. */
    bool Package::isEmpty() const {
-      return (type == NoType && !dataItem);
+      return (type == NoType);
    }
    
    const Package & Package::operator = (const Package & p) {
       if (this != &p) {
          uid = p.uid;
          type = p.type;
-         data = p.data;
-         if (p.dataItem) {
-            this->setDataItem(p.dataItem->clone());
-         }
+         setPayloadVariant(p.payload);
       }
       return *this;
+   }
+   
+   void Package::setPayloadVariant(const std::variant<std::string,std::unique_ptr<DataItem>> & x) {
+      auto item = std::get_if<std::unique_ptr<DataItem>>(&x);
+      if (item) {
+         setPayload(item->get()->clone());
+      } else {
+         setPayload(std::get<std::string>(x));
+      }
+
    }
    
    const Package & Package::operator = (Package && p) {
       if (this != &p) {
          uid = std::move(p.uid);
          type = std::move(p.type);
-         data = std::move(p.data);
-         dataItem = std::move(p.dataItem);
-         p.setDataItem(0);
+         payload = std::move(p.payload);
       }
       return *this;
    }
@@ -212,19 +218,7 @@ namespace OHARBase {
    bool Package::operator == (const Package & pkg) const {
       return (uid == pkg.uid);
    }
-   
-   bool Package::operator == (const std::string & str) const {
-      return data == str;
-   }
-   
-   
-   /** Separator string for data transfer between nodes.
-    @todo Remove separatorStr since it is not used after moving to JSON.
-    */
-   const std::string & Package::separator() {
-      return separatorStr;
-   }
-   
+      
    /** Externalizes the Package to a JSON object.
     @param j The JSON object fill with package contents.
     @param package The package to exernalize.
@@ -232,7 +226,7 @@ namespace OHARBase {
    void to_json(nlohmann::json & j, const Package & package) {
       j = nlohmann::json{{"package", to_string(package.getUuid())}};
       j["type"] = package.getTypeAsString();
-      j["payload"] = package.getData();
+      j["payload"] = package.getPayloadString();
    }
    
    /** Internalizes the package contents from a JSON structure.
@@ -248,7 +242,7 @@ namespace OHARBase {
          package.setTypeFromString(j["type"].get<std::string>());
       }
       if (j.find("payload") != j.end()) {
-         package.setData(j["payload"].get<std::string>());
+         package.setPayload(j["payload"].get<std::string>());
       }
    }
    

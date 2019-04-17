@@ -359,7 +359,7 @@ namespace OHARBase {
                         if (running) {
                            if (cmd == "ping") {
                               p.setType(Package::Control);
-                              p.setData(cmd);
+                              p.setPayload(cmd);
                               sendData(p);
                               showUIMessage("Ping sent to next node (if any).");
                            } else if (cmd == "readfile") {
@@ -367,7 +367,7 @@ namespace OHARBase {
                                  LOG(INFO) << TAG << "Got a read command to read a data file. " << dataFileName;
                                  showUIMessage("Handling command to read a file " + dataFileName);
                                  p.setType(Package::Control);
-                                 p.setData(cmd);
+                                 p.setPayload(cmd);
                                  passToHandlers(p);
                               } else {
                                  showUIMessage("Readfile command came, but no data file specified for this node.");
@@ -375,7 +375,7 @@ namespace OHARBase {
                            } else if (cmd == "quit" || cmd == "shutdown") {
                               if (cmd == "shutdown") {
                                  p.setType(Package::Control);
-                                 p.setData(cmd);
+                                 p.setPayload(cmd);
                                  sendData(p);
                                  logAndShowUIMessage("Sent the shutdown command to next node (if any).");
                               }
@@ -547,8 +547,8 @@ namespace OHARBase {
                while (!package.isEmpty() && running) {
                   LOG(INFO) << TAG << "Received a package!";
                   showUIMessage("Received data from previous node.");
-                  LOG(INFO) << TAG << "Received package: " << boost::uuids::to_string(package.getUuid()) << " " << package.getTypeAsString() << ":" << package.getData();
-                  if (package.getType() == Package::Control && package.getData() == "shutdown") {
+                  LOG(INFO) << TAG << "Received package: " << boost::uuids::to_string(package.getUuid()) << " " << package.getTypeAsString() << ":" << package.getPayloadString();
+                  if (package.getType() == Package::Control && package.getPayloadString() == "shutdown") {
                      showUIMessage("Got shutdown command, forwarding and initiating shutdown.");
                      sendData(package);
                      std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -560,7 +560,7 @@ namespace OHARBase {
                      break;
                   } else {
                      if (package.getType() == Package::Control) {
-                        showUIMessage("Control package arrived with command " + package.getData());
+                        showUIMessage("Control package arrived with command " + package.getPayloadString());
                      }
                      // Package was either data or control, so let the handlers handle it.
                      passToHandlers(package);

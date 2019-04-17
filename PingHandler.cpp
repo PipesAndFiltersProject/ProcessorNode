@@ -38,7 +38,7 @@ namespace OHARBase {
      no further processing of the message package is needed from other Handlers.
      */
     bool PingHandler::consume(Package & data) {
-        if (data.getType() == Package::Control && data.getData() == "ping") {
+        if (data.getType() == Package::Control && data.getPayloadString() == "ping") {
             LOG(INFO) << TAG << "***** PING received, forwarding to next node! *****";
             node.sendData(data);
             return true;

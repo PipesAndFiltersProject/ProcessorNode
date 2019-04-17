@@ -9,6 +9,8 @@
 #define __PipesAndFiltersNode__Package__
 
 #include <string>
+#include <variant>
+
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
@@ -55,23 +57,23 @@ namespace OHARBase {
       void setUuid(const boost::uuids::uuid & id);
       Type getType() const;
       void setType(Type ptype);
-      const std::string & getData() const;
-      void setData(const std::string & d);
-      const DataItem * getDataItem() const;
-      DataItem * getDataItem();
-      void setDataItem(std::unique_ptr<DataItem> item);
+      const std::string & getPayloadString() const;
+      void setPayload(const std::string & d);
+      const DataItem * getPayloadObject() const;
+      DataItem * getPayloadObject();
+      void setPayload(std::unique_ptr<DataItem> item);
       
       bool isEmpty() const;
       const Package & operator = (const Package & p);
       const Package & operator = (Package && p);
       bool operator == (const Package & pkg) const;
-      bool operator == (const std::string & str) const;
-      
-      static const std::string & separator();
-      
+            
       const std::string & getTypeAsString() const;
       void setTypeFromString(const std::string & typeStr);
       
+   private:
+      void setPayloadVariant(const std::variant<std::string,std::unique_ptr<DataItem>> & x);
+
    private:
       /** The unique identifier for a package. Generated using the boost library support. */
       boost::uuids::uuid uid;
@@ -85,27 +87,21 @@ namespace OHARBase {
        Thus all Nodes can be shut down by writing the command "shutdown" in the console of the first Node.<p>
        Data packages are application specific data items. */
       Type type;
-      /** Data as received from the network/sent to the network.*/
-      std::string data;
-      /** Parsed data, structure of which is application specific. Application developers
-       subclass their data objects from DataItem and implement application specific data
-       structures in their subclasses. Parsing of data from Package::data to Package::dataItem
-       happens in other applicatin specific classes.<br />
-       This member is null if nothing has been parsed, and not null if the pointer points to
-       a data item parsed from input (either from network or from file, for example).*/
-      std::unique_ptr<DataItem> dataItem;
       
-      /** The character separator used to separate the data items in the string
-       representation of the data. Used when data is received as string and when
-       data is sent to the next Node.
-       @todo Remove separatorStr since it is not used after moving to JSON.*/
-      static const std::string separatorStr;
+      /** Data as received from the network/sent to the network, either as JSON string or
+       parsed object. A c++17 std::variant holds either the JSON string or the parsed DataItem object.
+       Contents of DataItem is application specific. Application developers
+       subclass their data objects from DataItem and implement application specific data
+       structures in their subclasses. Parsing of data from string to DataItem
+       happens in other application specific classes. */
+      std::variant<std::string, std::unique_ptr<DataItem>> payload;
+      
       /** Textual representation of the package type Package::Control. */
       static const std::string controlStr;
       /** Textual representation of the package type Package::Data. */
       static const std::string dataStr;
       /** Textual representation of the package type Package:NoType. */
-      static const std::string noTypeStr;
+      static const std::string emptyString;
    };
    
    void to_json(nlohmann::json & j, const Package & package);
