@@ -33,7 +33,7 @@ namespace OHARBase {
     @todo Add a "corrupt" flag for packages that have bad content. These packages
     are just passed through the Filters, logging their presence, and they are not
     handled by any Handler. Would aid in debugging/testing since corrupt packages would
-    not just disappear.
+    not just disappear like a fart in the Sahara.
     @author Antti Juustila
     */
    class Package {
@@ -89,7 +89,8 @@ namespace OHARBase {
       Type type;
       
       /** Data as received from the network/sent to the network, either as JSON string or
-       parsed object. A c++17 std::variant holds either the JSON string or the parsed DataItem object.
+       parsed DataItem object pointer in managed pointer. Default value is an emptry string.
+       A c++17 std::variant holds either the JSON string or the parsed DataItem object.
        Contents of DataItem is application specific. Application developers
        subclass their data objects from DataItem and implement application specific data
        structures in their subclasses. Parsing of data from string to DataItem
