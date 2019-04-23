@@ -29,7 +29,7 @@ namespace OHARBase {
     @param aName The name of the processor node.
     @param obs The observer of the node who gets event and error notifications of activities in the node. */
    ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
-   : config(nullptr), name(aName), netInput(nullptr), netOutput(nullptr), running(false),
+   : config(nullptr), name(aName), networkReader(nullptr), networkWriter(nullptr), running(false),
    nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
    commandHandlerThread(nullptr), hasIncoming(false), observer(obs)
    {
@@ -47,15 +47,15 @@ namespace OHARBase {
          }
          delete config;
          // Close and destroy the sending network object
-         if (netOutput) {
-            if (netOutput->isRunning())
-               netOutput->stop();
-            delete netOutput;
+         if (networkWriter) {
+            if (networkWriter->isRunning())
+               networkWriter->stop();
+            delete networkWriter;
          }
-         if (netInput) {
-            if (netInput->isRunning())
-               netInput->stop();
-            delete netInput;
+         if (networkReader) {
+            if (networkReader->isRunning())
+               networkReader->stop();
+            delete networkReader;
          }
       } catch (const std::exception & e) {
          LOG(INFO) << "EXCEPTION in destroying processornode!";
@@ -114,15 +114,15 @@ namespace OHARBase {
     for arrivind data from this port and then handles it using the DataHandler objects.
     @param hostName The host name, e.g. "127.0.0.1:1234". */
    void ProcessorNode::setInputSource(const std::string & hostName) {
-      if (netInput) {
-         delete netInput;
-         netInput = nullptr;
+      if (networkReader) {
+         delete networkReader;
+         networkReader = nullptr;
       }
       if (hostName.length() && hostName != "null") {
          std::stringstream sstream;
          sstream << "Reading data from host " << hostName;
          logAndShowUIMessage(sstream.str());
-         netInput = new NetworkReader(hostName, *this, io_service);
+         networkReader = new NetworkReader(hostName, *this, io_service);
       } else {
          showUIMessage("This node has no previous node to read data from.");
       }
@@ -133,15 +133,15 @@ namespace OHARBase {
     @param hostName The host name, e.g. "127.0.0.1:1234" or "130.231.44.121:1234". */
    void ProcessorNode::setOutputSink(const std::string & hostName) {
       // Create a new Network object for sending data to the datagram socket.
-      if (netOutput) {
-         delete netOutput;
-         netOutput = nullptr;
+      if (networkWriter) {
+         delete networkWriter;
+         networkWriter = nullptr;
       }
       if (hostName.length() && hostName != "null") {
          std::stringstream sstream;
          sstream << "Sending data to " << hostName;
          showUIMessage(sstream.str());
-         netOutput = new NetworkWriter(hostName, io_service);
+         networkWriter = new NetworkWriter(hostName, io_service);
       } else {
          showUIMessage("This node has no next node to send data to.");
       }
@@ -154,15 +154,15 @@ namespace OHARBase {
     @param hostName The host name, e.g. "127.0.0.1".
     @param portNumber The port number to listen to, e.g. 1234. */
    void ProcessorNode::setInputSource(const std::string & hostName, int portNumber) {
-      if (netInput) {
-         delete netInput;
-         netInput = nullptr;
+      if (networkReader) {
+         delete networkReader;
+         networkReader = nullptr;
       }
       if (hostName.length() && hostName != "null") {
          std::stringstream sstream;
          sstream << "Reading data from host " << hostName << ":" << portNumber;
          logAndShowUIMessage(sstream.str());
-         netInput = new NetworkReader(hostName, portNumber, *this, io_service);
+         networkReader = new NetworkReader(hostName, portNumber, *this, io_service);
       } else {
          showUIMessage("This node has no previous node to read data from.");
       }
@@ -174,15 +174,15 @@ namespace OHARBase {
     @param portNumber The port number to listen to, e.g. 1234. */
    void ProcessorNode::setOutputSink(const std::string & hostName, int portNumber) {
       // Create a new Network object for sending data to the datagram socket.
-      if (netOutput) {
-         delete netOutput;
-         netOutput = nullptr;
+      if (networkWriter) {
+         delete networkWriter;
+         networkWriter = nullptr;
       }
       if (hostName.length() && hostName != "null") {
          std::stringstream sstream;
          sstream << "Sending data to host " << hostName << ":" << portNumber;
          logAndShowUIMessage(sstream.str());
-         netOutput = new NetworkWriter(hostName, portNumber, io_service);
+         networkWriter = new NetworkWriter(hostName, portNumber, io_service);
       } else {
          showUIMessage("This node has no next node to send data to.");
       }
@@ -279,18 +279,18 @@ namespace OHARBase {
       try {
          // Start the listening network reader
          showUIMessage("------ > Starting the node " + name);
-         if (netInput) {
+         if (networkReader) {
             LOG(INFO) << TAG << "Start the input reader";
-            netInput->start();
+            networkReader->start();
          }
          // Start the sending network object
-         if (netOutput) {
+         if (networkWriter) {
             LOG(INFO) << TAG << "Start the output writer";
-            netOutput->start();
+            networkWriter->start();
          }
          
          running = true;
-         if (netInput) {
+         if (networkReader) {
             LOG(INFO) << TAG << "Start the network receive handler thread...";
             incomingHandlerThread = new std::thread(&ProcessorNode::threadFunc, this);
          }
@@ -343,7 +343,7 @@ namespace OHARBase {
        */
       //MARK: Command handler thread.
       commandHandlerThread = new std::thread([this] {
-         while (running && ((netInput && netInput->isRunning()) || (netOutput && netOutput->isRunning())))
+         while (running && ((networkReader && networkReader->isRunning()) || (networkWriter && networkWriter->isRunning())))
          {
             
             {
@@ -418,13 +418,13 @@ namespace OHARBase {
          io_service.stop();
       }
       LOG(INFO) << TAG << "Stopping input...";
-      if (netInput && netInput->isRunning()) {
-         netInput->stop();
+      if (networkReader && networkReader->isRunning()) {
+         networkReader->stop();
       }
       LOG(INFO) << TAG << "Stopped input, now stopping output...";
       // Close and destroy the sending network object
-      if (netOutput && netOutput->isRunning()) {
-         netOutput->stop();
+      if (networkWriter && networkWriter->isRunning()) {
+         networkWriter->stop();
       }
       LOG(INFO) << TAG << "Input & Output stopped, now a pause.";
       // Pause the calling thread to allow node & network threads to finish their jobs.
@@ -468,10 +468,10 @@ namespace OHARBase {
    /** Method sends the data to the next node by using the NetworkWriter object.
     @param data The data package to send to the next Node. */
    void ProcessorNode::sendData(const Package & data) {
-      if (netOutput) {
+      if (networkWriter) {
          showUIMessage("Sending a package of type " + data.getTypeAsString());
          LOG(INFO) << TAG << "Telling network writer to send a package.";
-         netOutput->write(data);
+         networkWriter->write(data);
       }
    }
    
@@ -511,6 +511,7 @@ namespace OHARBase {
     message and if that is so, shutdown message is first sent to the following node (if any),
     and the quit command is passsed to the command handling thread to shut down the node.
     */
+   //MARK: incomingHandlerThread
    void ProcessorNode::threadFunc() {
       /*
       What is happening here in this thread...
@@ -541,8 +542,8 @@ namespace OHARBase {
          }
          // OK, something happened so if we are still running, check if something came from the network.
          if (running) {
-            if (netInput) {
-               Package package = netInput->read();
+            if (networkReader) {
+               Package package = networkReader->read();
                // If package is empty, nothing came.
                while (!package.isEmpty() && running) {
                   LOG(INFO) << TAG << "Received a package!";
@@ -564,9 +565,9 @@ namespace OHARBase {
                      }
                      // Package was either data or control, so let the handlers handle it.
                      passToHandlers(package);
-                     if (netInput) {
+                     if (networkReader) {
                         // Check if there are more packages to handle; handle them all while we are here.
-                        package = netInput->read();
+                        package = networkReader->read();
                      }
                   }
                }

@@ -179,9 +179,9 @@ namespace OHARBase {
       std::string name;
       
       /** The reader for receiving data from the previous Node. May be null. */
-      NetworkReader * netInput;
+      NetworkReader * networkReader;
       /** The writer for sending data to the next Node. May be null. */
-      NetworkWriter * netOutput;
+      NetworkWriter * networkWriter;
       
       /** The list of DataHandlers to process the incoming data packages.
        The assumption is that the handlers are put in the list in a following manner:<br />
