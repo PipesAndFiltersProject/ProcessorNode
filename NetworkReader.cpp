@@ -104,7 +104,7 @@ namespace OHARBase {
             std::string buf;
             buf.resize(bytes_transferred);
             buf.assign(buffer->begin(), bytes_transferred);
-            LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes of data: " << buf;
+            LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes: " << buf << " from " << remote_endpoint.get()->address() << ":" << remote_endpoint.get()->port();
             if (buf.length()>0) {
                try {
                   nlohmann::json j = nlohmann::json::parse(buf);
