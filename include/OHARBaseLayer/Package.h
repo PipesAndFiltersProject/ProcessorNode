@@ -36,7 +36,7 @@ namespace OHARBase {
     not just disappear like a fart in the Sahara.
     @author Antti Juustila
     */
-   class Package {
+   class Package final {
    public:
       /*! The type of the package. */
       enum Type {
@@ -51,7 +51,7 @@ namespace OHARBase {
       Package(const boost::uuids::uuid & id);
       Package(Type ptype, const std::string & data);
       Package(const boost::uuids::uuid & id, Type ptype, const std::string & data);
-      virtual ~Package();
+      ~Package();
       
       const boost::uuids::uuid & getUuid() const;
       void setUuid(const boost::uuids::uuid & id);
