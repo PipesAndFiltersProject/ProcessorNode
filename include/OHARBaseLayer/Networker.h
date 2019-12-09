@@ -11,13 +11,14 @@
 
 #include <string>
 #include <thread>
+#include <queue>
 
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
+#include <OHARBaseLayer/Package.h>
 
 namespace OHARBase {
-	
 	
 	/** An abstract base class for implementing networking in the architecture.
 	 This class contains the common features needed in sending and receiving of
@@ -49,7 +50,12 @@ namespace OHARBase {
 		 */
 		virtual void stop() = 0;
 		
-		bool isRunning();
+      /** How many data packages are there in the sending/receiving queue.
+       @return Number of data packages in the queue. */
+      int packagesInQueue() const;
+
+      bool isRunning();
+      
 		
 	private:
 		Networker() = delete;
@@ -75,6 +81,14 @@ namespace OHARBase {
 		 </ul>
 		 */
 		bool running;
+
+      /** A queue containing the data as Packages, received from the network.
+       As more data could be received as this node could handle at a time, a queue is necessary to hold
+       the data so that the node can handle them without loosing any data. */
+      std::queue<Package> msgQueue;
+      /** A mutex guards the access to the queue so that many threads do not manipulate the
+       queue simultaneously. */
+      std::mutex guard;
 
 		/** The boost socket to use when sending or receiving data. */
 		std::unique_ptr<boost::asio::ip::udp::socket> socket;

@@ -142,6 +142,8 @@ namespace OHARBase {
       
       void passToNextHandlers(const DataHandler * current, Package & data);
       
+      void updatePackageCountInQueue(const std::string & queueName, int packageCount);
+      
       void showUIMessage(const std::string & message, ProcessorNodeObserver::EventType e = ProcessorNodeObserver::EventType::NotificationEvent);
       void logAndShowUIMessage(const std::string & message, ProcessorNodeObserver::EventType e = ProcessorNodeObserver::EventType::NotificationEvent);
       
@@ -215,6 +217,9 @@ namespace OHARBase {
       std::string command;
       /**  Command can be changed by man thread (user) and netinput handler thread. Must use mutex to guard it. */
       std::mutex commandGuard;
+      
+      // A container to keep track on which queues hold how many packages.
+      std::map<std::string,int> queuePackageCounts;
       
       /** Logging tag. */
       static const std::string TAG;

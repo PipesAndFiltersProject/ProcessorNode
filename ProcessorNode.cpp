@@ -463,6 +463,10 @@ namespace OHARBase {
       commandGuard.unlock();
       LOG(INFO) << "Received a command " << command;
       condition.notify_all();
+      // Update send queue status here too since writer does not notify Node when sending has been done.
+      if (networkWriter) {
+         updatePackageCountInQueue("net-out", networkWriter->packagesInQueue());
+      }
    }
    
    /** Method sends the data to the next node by using the NetworkWriter object.
@@ -472,6 +476,7 @@ namespace OHARBase {
          showUIMessage("Sending a package of type " + data.getTypeAsString());
          LOG(INFO) << TAG << "Telling network writer to send a package.";
          networkWriter->write(data);
+         updatePackageCountInQueue("net-out", networkWriter->packagesInQueue());
       }
    }
    
@@ -499,6 +504,8 @@ namespace OHARBase {
                LOG(INFO) << TAG << "Consumer returned true, not offering forward anymore";
                break;
             }
+//            using namespace std::chrono_literals;
+//            std::this_thread::sleep_for(50ms);
          }
       }
    }
@@ -536,7 +543,7 @@ namespace OHARBase {
          LOG(INFO) << TAG << "Receive queue empty, waiting...";
          
          {
-            // Wait for the condition variable to be notified of something happening.
+            // Wait until the condition variable is notified that something happened.
             std::unique_lock<std::mutex> ulock(guard);
             condition.wait(ulock, [this] { return this->hasIncoming || !running; });
          }
@@ -544,6 +551,7 @@ namespace OHARBase {
          if (running) {
             if (networkReader) {
                Package package = networkReader->read();
+               updatePackageCountInQueue("net-in", networkReader->packagesInQueue());
                // If package is empty, nothing came.
                while (!package.isEmpty() && running) {
                   LOG(INFO) << TAG << "Received a package!";
@@ -595,6 +603,8 @@ namespace OHARBase {
                LOG(INFO) << TAG << "Handler returned true, not offering forward anymore";
                break;
             }
+//            using namespace std::chrono_literals;
+//            std::this_thread::sleep_for(50ms);
          }
       } catch (const std::exception & e) {
          std::stringstream sstream;
@@ -604,6 +614,16 @@ namespace OHARBase {
    }
    
    
+   void ProcessorNode::updatePackageCountInQueue(const std::string & queueName, int packageCount)  {
+      queuePackageCounts[queueName] = packageCount;
+      std::stringstream packageStream;
+      auto save = [&packageStream](const std::pair<std::string,int> & entry) {
+         packageStream << entry.first << ":" << entry.second << " ";         
+      };
+      std::for_each(queuePackageCounts.begin(), queuePackageCounts.end(), save);
+      showUIMessage(packageStream.str(), ProcessorNodeObserver::EventType::QueueStatusEvent);
+   }
+
    // From NetworkReaderObserver:
    /** Implements the NetworkReaderObserver interface. NetworkReader calls this interface
     method when data has been received from the previous Node. The Node then notifies the

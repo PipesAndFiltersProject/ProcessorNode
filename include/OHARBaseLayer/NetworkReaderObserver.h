@@ -24,7 +24,7 @@ namespace OHARBase {
 		virtual void receivedData() = 0;
         /** NetworkReader calls this method if it cannot parse/handle the data that was received.
          @param what What went wrong in data handling. */
-        virtual void errorInData(const std::string & what) = 0;
+      virtual void errorInData(const std::string & what) = 0;
 	};
 	
 	

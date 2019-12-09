@@ -26,7 +26,8 @@ namespace OHARBase {
             NotificationEvent, /*!< Normal notification that something of interest to user happened. */
             ShutDownEvent, /*!< Node notifies the App that it should close down (usually because notification from previous node asks it to.). */
             WarningEvent, /*!<Something fishy going on, warning the app/user to check out if config, networking or something else is wrong, file is missing etc. */
-            ErrorEvent /*!< Something went badly wrong in the node. Notify the app/user. */
+            ErrorEvent, /*!< Something went badly wrong in the node. Notify the app/user. */
+            QueueStatusEvent /*!< Number of packages in the node input and output queues. Example: "in:112 out:442" */
         };
         /** Called by the node to notify the app / user that something of interest happened in the node.
          @param e Type of the event.

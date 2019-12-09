@@ -9,11 +9,9 @@
 #ifndef __PipesAndFiltersFramework__NetworkReader__
 #define __PipesAndFiltersFramework__NetworkReader__
 
-#include <queue>
 #include <sys/socket.h>
 
 #include <OHARBaseLayer/Networker.h>
-#include <OHARBaseLayer/Package.h>
 
 namespace OHARBase {
 	
@@ -46,15 +44,7 @@ namespace OHARBase {
 		void handleReceive(const boost::system::error_code & error, std::size_t bytes_transferred);
 		
 	private:
-		
-		/** A queue containing the data as Packages, received from the network.
-		 As more data could be received as this node could handle at a time, a queue is necessary to hold
-		 the data so that the node can handle them without loosing any data. */
-		std::queue<Package> msgQueue;
-		/** A mutex guards the access to the queue so that many threads do not manipulate the
-		 queue simultaneously. */
-		std::mutex guard;
-		
+				
 		/** The observer of the reader. When the reader receives data from the network,
 		 it will notify the reader about the data. The observer can then retrieve the data by using
 		 read() and handle it. */

@@ -55,6 +55,10 @@ namespace OHARBase {
 	}
 	
 	
+   int Networker::packagesInQueue() const {
+      return msgQueue.size();
+   }
+
 	/**
 	 Is the networker running or not (has it been start()'ed or not).
 	 @return true, if the networker is running (reading or ready to send).

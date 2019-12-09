@@ -47,10 +47,6 @@ namespace OHARBase {
 		
 		/** Contains the data which is currenty being sent, in a string. */
 		std::string currentlySending;
-		/** The queue of data packages to send. */
-		std::queue<Package> msgQueue;
-		/** The mutex used to guard access to the package queue. */
-		std::mutex guard;
 		/** The condition variable used to signal the sending thread that new data is available
 		 in the queue. */
 		std::condition_variable condition;
