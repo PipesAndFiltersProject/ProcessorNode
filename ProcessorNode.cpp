@@ -363,6 +363,7 @@ namespace OHARBase {
                               sendData(p);
                               showUIMessage("Ping sent to next node (if any).");
                            } else if (cmd == "readfile") {
+                              queuePackageCounts.clear();
                               if (dataFileName.length() > 0) {
                                  LOG(INFO) << TAG << "Got a read command to read a data file. " << dataFileName;
                                  showUIMessage("Handling command to read a file " + dataFileName);
@@ -569,6 +570,7 @@ namespace OHARBase {
                      break;
                   } else {
                      if (package.getType() == Package::Control) {
+                        queuePackageCounts.clear();
                         showUIMessage("Control package arrived with command " + package.getPayloadString());
                      }
                      // Package was either data or control, so let the handlers handle it.
@@ -615,10 +617,18 @@ namespace OHARBase {
    
    
    void ProcessorNode::updatePackageCountInQueue(const std::string & queueName, int packageCount)  {
-      queuePackageCounts[queueName] = packageCount;
+      queue_package_type::iterator iter = queuePackageCounts.find(queueName);
+      if (iter != queuePackageCounts.end()) {
+         std::pair<int,int> counts = queuePackageCounts[queueName];
+         counts.first = packageCount;
+         counts.second = std::max(counts.second, packageCount);
+         queuePackageCounts[queueName] = counts;
+      } else {
+         queuePackageCounts[queueName] = {packageCount, packageCount};
+      }
       std::stringstream packageStream;
-      auto save = [&packageStream](const std::pair<std::string,int> & entry) {
-         packageStream << entry.first << ":" << entry.second << " ";         
+      auto save = [&packageStream](const std::pair<std::string,std::pair<int,int>> & entry) {
+         packageStream << entry.first << ":" << entry.second.first << ":" << entry.second.second << " ";
       };
       std::for_each(queuePackageCounts.begin(), queuePackageCounts.end(), save);
       showUIMessage(packageStream.str(), ProcessorNodeObserver::EventType::QueueStatusEvent);

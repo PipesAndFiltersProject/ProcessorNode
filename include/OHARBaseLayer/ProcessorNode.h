@@ -218,8 +218,9 @@ namespace OHARBase {
       /**  Command can be changed by man thread (user) and netinput handler thread. Must use mutex to guard it. */
       std::mutex commandGuard;
       
-      // A container to keep track on which queues hold how many packages.
-      std::map<std::string,int> queuePackageCounts;
+      // A container to keep track on which queues hold how many packages, max packages.
+      typedef std::map<std::string, std::pair<int,int>> queue_package_type;
+      queue_package_type queuePackageCounts;
       
       /** Logging tag. */
       static const std::string TAG;
