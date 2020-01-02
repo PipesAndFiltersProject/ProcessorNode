@@ -17,6 +17,7 @@
 
 namespace OHARBase {
 	
+   //TODO: 1..n destination addresses instead of only one.
 	/** NetworkWriter handles the sending of the data packages to the next node.
 	 It contains a queue of data packages to send. Sending happens in a separate thread
 	 in order to keep the main thread of the processornode responsive to user actions as well

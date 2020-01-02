@@ -177,9 +177,6 @@ namespace OHARBase {
       /** The boost io_service is needed for boost async network operations. */
       boost::asio::io_service io_service;
       
-      /** The name of the Node. */
-      std::string name;
-      
       /** The reader for receiving data from the previous Node. May be null. */
       NetworkReader * networkReader;
       /** The writer for sending data to the next Node. May be null. */
@@ -218,7 +215,7 @@ namespace OHARBase {
       /**  Command can be changed by man thread (user) and netinput handler thread. Must use mutex to guard it. */
       std::mutex commandGuard;
       
-      // A container to keep track on which queues hold how many packages, max packages.
+      // A container to keep track on which queues hold how many packages now, how many packages at max during batch run.
       typedef std::map<std::string, std::pair<int,int>> queue_package_type;
       queue_package_type queuePackageCounts;
       

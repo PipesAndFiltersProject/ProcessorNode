@@ -50,12 +50,12 @@ namespace OHARBase {
 		 read() and handle it. */
 		NetworkReaderObserver & observer;
 		
+      /** The address of the sender whose packages we are handling. */
+      boost::asio::ip::udp::endpoint remote_endpoint;
+      
 		/** Tag for logging. */
 		static const std::string TAG;
 		
-		/** The address to get data from or send to. */
-		std::unique_ptr<boost::asio::ip::udp::endpoint> remote_endpoint;
-
 	};
 	
 	

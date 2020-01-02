@@ -41,9 +41,6 @@ namespace OHARBase {
    :		Networker(hostName, io_s),
    observer(obs)
    {
-      using namespace boost::asio::ip;
-      remote_endpoint = std::unique_ptr<udp::endpoint>(new boost::asio::ip::udp::endpoint(udp::v4(), port));
-      socket = std::unique_ptr<udp::socket>(new udp::socket(io_s, *remote_endpoint));
    }
    
    /**
@@ -62,9 +59,6 @@ namespace OHARBase {
    :		Networker(hostName, portNumber, io_s),
    observer(obs)
    {
-      using namespace boost::asio::ip;
-      remote_endpoint = std::unique_ptr<udp::endpoint>(new udp::endpoint(udp::v4(), port));
-      socket = std::unique_ptr<udp::socket>(new udp::socket(io_s, *remote_endpoint));
    }
    
    NetworkReader::~NetworkReader() {
@@ -77,13 +71,18 @@ namespace OHARBase {
    void NetworkReader::start() {
       LOG(INFO) << TAG << "Start reading for data...";
       running = true;
-      if (!socket->is_open()) {
-         LOG(INFO) << TAG << "Opening read socket";
-         socket->connect(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port));
-      }
+      
       buffer->fill(0);
-      socket->async_receive_from(boost::asio::buffer(*buffer),
-                                 *remote_endpoint,
+
+      using namespace boost::asio::ip;
+      address ipAddr = address_v4::any();
+      remote_endpoint.port(port);
+      
+      socket.open(remote_endpoint.protocol());
+      socket.bind(remote_endpoint);
+
+      socket.async_receive_from(boost::asio::buffer(*buffer),
+                                 remote_endpoint,
                                  boost::bind(&NetworkReader::handleReceive, this,
                                              boost::asio::placeholders::error,
                                              boost::asio::placeholders::bytes_transferred));
@@ -104,11 +103,14 @@ namespace OHARBase {
             std::string buf;
             buf.resize(bytes_transferred);
             buf.assign(buffer->begin(), bytes_transferred);
-            LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes: " << buf << " from " << remote_endpoint.get()->address() << ":" << remote_endpoint.get()->port();
+            LOG(INFO) << TAG << "Received " << bytes_transferred << " bytes: " << buf << " from " << remote_endpoint.address() << ":" << remote_endpoint.port();
             if (buf.length()>0) {
                try {
                   nlohmann::json j = nlohmann::json::parse(buf);
                   Package p = j.get<OHARBase::Package>();
+                  std::stringstream stream;
+                  stream << remote_endpoint.address() << ":" << remote_endpoint.port();
+                  p.setOrigin(stream.str());
                   guard.lock();
                   msgQueue.push(p);
                   guard.unlock();
@@ -136,8 +138,8 @@ namespace OHARBase {
          LOG(INFO) << TAG << "Stop the reader...";
          running = false;
          LOG(INFO) << TAG << "Shutting down the socket.";
-         socket->cancel();
-         socket->close();
+         socket.cancel();
+         socket.close();
       }
    }
    

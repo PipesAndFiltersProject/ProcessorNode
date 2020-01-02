@@ -13,13 +13,13 @@ find_package(nlohmann_json 3.2.0 REQUIRED)
 if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
    add_library(${LIB_NAME} STATIC ConfigurationDataItem.cpp DataItem.cpp Networker.cpp 
        ProcessorNode.cpp ConfigurationFileReader.cpp NodeConfiguration.cpp DataFileReader.cpp
-       NetworkReader.cpp Package.cpp DataHandler.cpp NetworkWriter.cpp PingHandler.cpp
+       NetworkReader.cpp Package.cpp DataHandler.cpp NetworkWriter.cpp PingHandler.cpp ConfigurationHandler.cpp
        include/${LIB_NAME}/ConfigurationDataItem.h include/${LIB_NAME}/ConfigurationFileReader.h
        include/${LIB_NAME}/DataFileReader.h include/${LIB_NAME}/DataHandler.h include/${LIB_NAME}/DataItem.h
        include/${LIB_NAME}/DataReaderObserver.h include/${LIB_NAME}/NetworkReader.h
        include/${LIB_NAME}/NetworkReaderObserver.h include/${LIB_NAME}/NetworkWriter.h include/${LIB_NAME}/Networker.h
        include/${LIB_NAME}/NodeConfiguration.h include/${LIB_NAME}/Package.h include/${LIB_NAME}/PingHandler.h
-       include/${LIB_NAME}/ProcessorNode.h include/${LIB_NAME}/ProcessorNodeObserver.h)
+       include/${LIB_NAME}/ProcessorNode.h include/${LIB_NAME}/ProcessorNodeObserver.h include/${LIB_NAME}/ConfigurationHandler.h)
 
    set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS -fPIC -g -Wall)
    set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS "-Wl -lpthread")
@@ -30,7 +30,7 @@ if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
    target_link_libraries(${LIB_NAME} PUBLIC ${G3LOG_LIBRARIES})
    target_link_libraries(${LIB_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
-   set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "include/${LIB_NAME}/ConfigurationDataItem.h;include/${LIB_NAME}/DataReaderObserver.h;include/${LIB_NAME}/Networker.h;include/${LIB_NAME}/ConfigurationFileReader.h;include/${LIB_NAME}/NodeConfiguration.h;include/${LIB_NAME}/DataFileReader.h;include/${LIB_NAME}/NetworkReader.h;include/${LIB_NAME}/Package.h;include/${LIB_NAME}/DataHandler.h;include/${LIB_NAME}/NetworkReaderObserver.h;include/${LIB_NAME}/PingHandler.h;include/${LIB_NAME}/DataItem.h;include/${LIB_NAME}/NetworkWriter.h;include/${LIB_NAME}/ProcessorNode.h;include/${LIB_NAME}/ProcessorNodeObserver.h")
+   set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "include/${LIB_NAME}/ConfigurationDataItem.h;include/${LIB_NAME}/DataReaderObserver.h;include/${LIB_NAME}/Networker.h;include/${LIB_NAME}/ConfigurationFileReader.h;include/${LIB_NAME}/NodeConfiguration.h;include/${LIB_NAME}/DataFileReader.h;include/${LIB_NAME}/NetworkReader.h;include/${LIB_NAME}/Package.h;include/${LIB_NAME}/DataHandler.h;include/${LIB_NAME}/NetworkReaderObserver.h;include/${LIB_NAME}/PingHandler.h;include/${LIB_NAME}/DataItem.h;include/${LIB_NAME}/NetworkWriter.h;include/${LIB_NAME}/ProcessorNode.h;include/${LIB_NAME}/ProcessorNodeObserver.h;include/${LIB_NAME}/ConfigurationHandler.h")
 
    install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME})
    install(EXPORT ${LIB_NAME}Targets FILE ${LIB_NAME}Targets.cmake NAMESPACE OHARBaseLayer:: DESTINATION lib/cmake/${LIB_NAME})

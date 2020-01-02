@@ -28,19 +28,27 @@ namespace OHARBase {
 		NodeConfiguration() = default;
 		virtual ~NodeConfiguration();
 		
+      void setName(const std::string & nodeName);
+      const std::string & getName() const;
+      
       virtual void handleNewItem(std::unique_ptr<DataItem> item) override;
 		
 		std::string getValue(const std::string &configName) const;
 		
 		NodeConfiguration(const NodeConfiguration &) = delete;
 		NodeConfiguration * operator =(const NodeConfiguration &) = delete;
-		
+
+      friend void to_json(nlohmann::json & j, const NodeConfiguration & config);
+      friend void from_json(const nlohmann::json & j, NodeConfiguration & config);
+
 	private:
+      /** The name of the node. */
+      std::string name;
         /** Configuration items of the node. */
 		std::vector<ConfigurationDataItem*> configItems;
-		
-	};
 
+      
+	};
 
 
 }

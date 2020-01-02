@@ -16,6 +16,8 @@
 
 namespace OHARBase {
 
+   // TODO: change configuration file format to JSON.
+
 	const std::string ConfigurationFileReader::TAG{"ConfigReader "};
 	
    /**

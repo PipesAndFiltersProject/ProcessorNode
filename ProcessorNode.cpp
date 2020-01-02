@@ -24,12 +24,13 @@
 namespace OHARBase {
    
    const std::string ProcessorNode::TAG{"PNode "};
+   const std::string KNullString{""};
                                          
    /** Constructor for the processor node.
     @param aName The name of the processor node.
     @param obs The observer of the node who gets event and error notifications of activities in the node. */
    ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
-   : config(nullptr), name(aName), networkReader(nullptr), networkWriter(nullptr), running(false),
+   : config(nullptr), networkReader(nullptr), networkWriter(nullptr), running(false),
    nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
    commandHandlerThread(nullptr), hasIncoming(false), observer(obs)
    {
@@ -201,7 +202,10 @@ namespace OHARBase {
    /** For querying the name of the Node.
     @return The name of the Node. */
    const std::string & ProcessorNode::getName() const {
-      return name;
+      if (config) {
+         return config->getName();
+      }
+      return KNullString;
    }
    
    /** A Node can read input from a data file. The file is read by giving the command "readfile"
@@ -278,7 +282,7 @@ namespace OHARBase {
       
       try {
          // Start the listening network reader
-         showUIMessage("------ > Starting the node " + name);
+         showUIMessage("------ > Starting the node " + config->getName());
          if (networkReader) {
             LOG(INFO) << TAG << "Start the input reader";
             networkReader->start();

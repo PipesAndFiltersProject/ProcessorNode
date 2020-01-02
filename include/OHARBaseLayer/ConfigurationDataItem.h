@@ -12,6 +12,8 @@
 
 #include <OHARBaseLayer/DataItem.h>
 
+#include <nlohmann/json.hpp>
+
 namespace OHARBase {
     
     /**
@@ -46,6 +48,9 @@ namespace OHARBase {
         static const std::string TAG;
     };
     
+   void to_json(nlohmann::json & j, const ConfigurationDataItem & configItem);
+   void from_json(const nlohmann::json & j, ConfigurationDataItem & configItem);
+
     
 }
 

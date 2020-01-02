@@ -42,7 +42,8 @@ namespace OHARBase {
       enum Type {
          NoType,   /*!< The package has no type (yet); it is uninitialized. */
          Control,  /*!< The package contains a control message. */
-         Data      /*!< The package contains actual application specific data. */
+         Data,      /*!< The package contains actual application specific data. */
+         Configuration /*!< The package contains node configuration data or commands. */
       };
       
       Package();
@@ -62,6 +63,14 @@ namespace OHARBase {
       const DataItem * getPayloadObject() const;
       DataItem * getPayloadObject();
       void setPayload(std::unique_ptr<DataItem> item);
+
+      void setOrigin(const std::string & o);
+      const std::string & origin() const;
+      bool hasOrigin() const;
+
+      void setDestination(const std::string & d);
+      const std::string & destination() const;
+      bool hasDestination() const;
       
       bool isEmpty() const;
       const Package & operator = (const Package & p);
@@ -96,11 +105,19 @@ namespace OHARBase {
        structures in their subclasses. Parsing of data from string to DataItem
        happens in other application specific classes. */
       std::variant<std::string, std::unique_ptr<DataItem>> payload;
+
+      /** Origin address of the package. */
+      std::string originAddress;
+      
+      /** Destination address of the packet. Empty if the Node's default destination address is to be used. */
+      std::string destinationAddress;
       
       /** Textual representation of the package type Package::Control. */
       static const std::string controlStr;
       /** Textual representation of the package type Package::Data. */
       static const std::string dataStr;
+      /** Textual representation of the package type Package::Configuration. */
+      static const std::string configurationStr;
       /** Textual representation of the package type Package:NoType. */
       static const std::string emptyString;
    };

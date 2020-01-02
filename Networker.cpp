@@ -26,7 +26,7 @@ namespace OHARBase {
     @param io_s The boost asio io service.
 	 */
 	Networker::Networker(const std::string & hostName, boost::asio::io_service & io_s)
-	:	running(false)
+	:	running(false), socket(io_s)
 	{
 		setHost(hostName);
 		buffer = std::shared_ptr<boost::array<char, BufferSize>>(new boost::array<char, BufferSize>());
@@ -46,7 +46,7 @@ namespace OHARBase {
     @param io_s The boost asio io service.
 	 */
 	Networker::Networker(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-	: host(hostName), port(portNumber), running(false)
+	: host(hostName), port(portNumber), running(false), socket(io_s)
 	{
 		buffer = std::shared_ptr<boost::array<char, BufferSize>>(new boost::array<char, BufferSize>());
 	}

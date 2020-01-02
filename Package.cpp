@@ -22,6 +22,7 @@ namespace OHARBase {
    
    const std::string Package::controlStr = "control";
    const std::string Package::dataStr = "data";
+   const std::string Package::configurationStr = "configuration";
    const std::string Package::emptyString = "";
    
    /** Default constructor for Package. Generates a random uuid for the Package. */
@@ -112,6 +113,9 @@ namespace OHARBase {
          case Data: {
             return dataStr;
          }
+         case Configuration: {
+            return configurationStr;
+         }
          default: {
             return emptyString;
          }
@@ -127,6 +131,8 @@ namespace OHARBase {
          type = Package::Control;
       } else if (typeStr == Package::dataStr) {
          type = Package::Data;
+      } else if (typeStr == Package::configurationStr) {
+         type = Package::Configuration;
       } else {
          type = Package::NoType;
       }
@@ -186,6 +192,42 @@ namespace OHARBase {
       return (type == NoType);
    }
    
+   /** Sets the address where the package came from. Empty, if package did not come from outside the node.
+    @param o Address of the package origin. */
+   void Package::setOrigin(const std::string & o) {
+      originAddress = o;
+   }
+
+   /** Gets the address where the package came from. Empty, if package did not come from outside the node.
+    @return Address of the package origin. */
+   const std::string & Package::origin() const {
+      return originAddress;
+   }
+
+   /** Use to query if the package has an origin address or not.
+    @return Returns true if the package has an origin address. */
+   bool Package::hasOrigin() const {
+      return originAddress.length() > 0;
+   }
+
+   /** Sets the package's destination address.
+    @param d The destination of the package. */
+   void Package::setDestination(const std::string & d) {
+      destinationAddress = d;
+   }
+
+   /** Gets the package's destination address.
+    @return The destination of the package. */
+   const std::string & Package::destination() const {
+      return destinationAddress;
+   }
+
+   /** Use to query if the package has a package specific destination address or not.
+    @return Returns true if the package has a destination address. */
+   bool Package::hasDestination() const {
+      return destinationAddress.length() > 0;
+   }
+
    const Package & Package::operator = (const Package & p) {
       if (this != &p) {
          uid = p.uid;

@@ -15,6 +15,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <g3log/g3log.hpp>
 
@@ -34,7 +35,6 @@ namespace OHARBase {
    NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
    : Networker(hostName,io_s), threader(nullptr)
    {
-      socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
    }
    
    /**
@@ -47,7 +47,6 @@ namespace OHARBase {
    NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
    : Networker(hostName, portNumber, io_s), threader(nullptr)
    {
-      socket = std::unique_ptr<boost::asio::ip::udp::socket>(new boost::asio::ip::udp::socket(io_s));
    }
    
    NetworkWriter::~NetworkWriter()
@@ -95,12 +94,26 @@ namespace OHARBase {
                msgQueue.pop();
                LOG(INFO) << TAG << "Just popped, next unlock";
                guard.unlock();
-               LOG(INFO) << TAG << "Determining destination address for " << host << ":" << port;
-               boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(host), port);
+               
+               std::string tmpHost;
+               int tmpPort;
+               if (p.hasDestination()) {
+                  std::vector<std::string> strs;
+                  boost::split(strs, p.destination(), boost::is_any_of(":"));
+                  if (strs.size() == 2) {
+                     tmpHost = strs.at(0);
+                     tmpPort = std::stoi(strs.at(1));
+                  }
+               } else {
+                  tmpHost = host;
+                  tmpPort = port;
+               }
+               LOG(INFO) << TAG << "Creating destination address for " << tmpHost << ":" << tmpPort;
+               boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(tmpHost), tmpPort);
                LOG(INFO) << TAG << "Creating message...";
                boost::shared_ptr<std::string> message(new std::string(currentlySending));
                LOG(INFO) << TAG << "Now sending through socket " << destination.address().to_string() << ":" << destination.port();
-               socket->async_send_to(boost::asio::buffer(*message), destination,
+               socket.async_send_to(boost::asio::buffer(*message), destination,
                                      boost::bind(&NetworkWriter::handleSend, this,
                                                  boost::asio::placeholders::error,
                                                  boost::asio::placeholders::bytes_transferred));
@@ -140,7 +153,7 @@ namespace OHARBase {
       // start working
       if (!running) {
          LOG(INFO) << TAG << "Starting NetworkWriter.";
-         socket->open(boost::asio::ip::udp::v4());
+         socket.open(boost::asio::ip::udp::v4());
          threader = new std::thread(&NetworkWriter::threadFunc, this);
       }
    }
@@ -154,8 +167,8 @@ namespace OHARBase {
             msgQueue.pop();
          }
          condition.notify_all();
-         socket->cancel();
-         socket->close();
+         socket.cancel();
+         socket.close();
          if (threader->joinable()) {
             threader->detach();
          }
