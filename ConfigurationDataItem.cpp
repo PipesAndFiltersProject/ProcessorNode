@@ -18,6 +18,11 @@ namespace OHARBase {
 
 // TODO: change parsing of config data to JSON, following StudentDataItem example.
 
+ConfigurationDataItem::ConfigurationDataItem(const ConfigurationDataItem & item)
+: itemName(item.itemName), itemValue(item.itemName)
+{
+}
+
 const std::string ConfigurationDataItem::TAG{"ConfigReader"};
 /** Configuration data item name for ProcessorNode incoming address. */
 const std::string ConfigurationDataItem::CONF_INPUTADDR{"input"};
@@ -58,6 +63,18 @@ const std::string & ConfigurationDataItem::getItemName() const {
  */
 const std::string & ConfigurationDataItem::getItemValue() const {
    return itemValue;
+}
+
+
+ConfigurationDataItem & ConfigurationDataItem::operator = (const ConfigurationDataItem & item) {
+   if (this != &item) {
+      itemValue = item.itemValue;
+   }
+   return *this;
+}
+
+bool ConfigurationDataItem::operator == (const ConfigurationDataItem & item) const {
+   return itemName == item.itemName;
 }
 
 

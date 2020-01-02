@@ -20,6 +20,7 @@
 #include <OHARBaseLayer/DataFileReader.h>
 #include <OHARBaseLayer/NodeConfiguration.h>
 #include <OHARBaseLayer/ConfigurationFileReader.h>
+#include <OHARBaseLayer/ConfigurationHandler.h>
 
 namespace OHARBase {
    
@@ -36,6 +37,7 @@ namespace OHARBase {
    {
       LOG(INFO) << TAG << "Creating ProcessorNode.";
       handlers.push_back(new PingHandler(*this));
+      handlers.push_back(new ConfigurationHandler(*this));
    }
    
    /** Destructor cleans all the internal objects of the Node when it is destroyed. */
@@ -129,6 +131,10 @@ namespace OHARBase {
       }
    }
    
+   const NodeConfiguration & ProcessorNode::getConfiguration() const {
+      return *config;
+   }
+
    /** Sets the address of the output sink for the Node. This is the hostname and port where
     data is written to.
     @param hostName The host name, e.g. "127.0.0.1:1234" or "130.231.44.121:1234". */

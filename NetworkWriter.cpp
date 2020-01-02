@@ -97,6 +97,7 @@ namespace OHARBase {
                
                std::string tmpHost;
                int tmpPort;
+               // If package has destination address, use it instead of node's configured destination address.
                if (p.hasDestination()) {
                   std::vector<std::string> strs;
                   boost::split(strs, p.destination(), boost::is_any_of(":"));
@@ -108,7 +109,7 @@ namespace OHARBase {
                   tmpHost = host;
                   tmpPort = port;
                }
-               LOG(INFO) << TAG << "Creating destination address for " << tmpHost << ":" << tmpPort;
+               LOG(INFO) << TAG << "Destination address is " << tmpHost << ":" << tmpPort;
                boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(tmpHost), tmpPort);
                LOG(INFO) << TAG << "Creating message...";
                boost::shared_ptr<std::string> message(new std::string(currentlySending));

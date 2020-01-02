@@ -11,6 +11,7 @@
 #include <OHARBaseLayer/ConfigurationHandler.h>
 #include <OHARBaseLayer/ProcessorNode.h>
 #include <OHARBaseLayer/Package.h>
+#include <OHARBaseLayer/NodeConfiguration.h>
 
 namespace OHARBase {
 
@@ -53,8 +54,15 @@ bool ConfigurationHandler::consume(Package & data) {
          // to destination address of Package.
          // Send the package ahead using node.SendData
          // Return true, no one else should handle the package.
-         nlohmann::json info = R"({"operation" : "info"})"_json;
-         info["nodename"] = node.getName();
+         nlohmann::json response;
+         response["operation"] = ConfigInfoOperation;
+         nlohmann::json configuration = node.getConfiguration();
+         response += configuration;
+         Package package;
+         package.setType(Package::Configuration);
+         package.setPayload(response.dump());
+         package.setDestination(data.origin());
+         node.sendData(package);
          /*
           "payload" :
           {

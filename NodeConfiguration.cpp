@@ -23,10 +23,7 @@ const std::string & NodeConfiguration::getName() const {
  Destructor destroys the configuration data it holds.
  */
 NodeConfiguration::~NodeConfiguration() {
-   while (configItems.size() > 0) {
-      delete configItems[0];
-      configItems.erase(configItems.begin());
-   }
+   configItems.clear();
 }
 
 /**
@@ -38,7 +35,7 @@ NodeConfiguration::~NodeConfiguration() {
 void NodeConfiguration::handleNewItem(std::unique_ptr<DataItem> item) {
    ConfigurationDataItem * d = dynamic_cast<ConfigurationDataItem*>(item.get());
    if (d) {
-      configItems.push_back(d);
+      addOrReplace(*d);
       item.release();
    }
 }
@@ -49,22 +46,41 @@ void NodeConfiguration::handleNewItem(std::unique_ptr<DataItem> item) {
  @returns The value of the named configuration item, empty string if not found.
  */
 std::string NodeConfiguration::getValue(const std::string &configName) const {
-   for (ConfigurationDataItem * configItem : configItems) {
-      if (configItem->getItemName() == configName) {
-         return configItem->getItemValue();
+   for (const ConfigurationDataItem & configItem : configItems) {
+      if (configItem.getItemName() == configName) {
+         return configItem.getItemValue();
       }
    }
    return "";
 }
 
+void NodeConfiguration::addOrReplace(const ConfigurationDataItem & item) {
+   auto element = std::find(configItems.begin(), configItems.end(), item);
+   if (element != configItems.end()) {
+      *element = item;
+   }
+   configItems.push_back(item);
+}
 
 void to_json(nlohmann::json & j, const NodeConfiguration & config) {
    j = nlohmann::json{{"nodename", config.getName()}};
-   auto pusher = [&j] (const ConfigurationDataItem * item) { j.push_back(*item); };
-   std::for_each(config.configItems.begin(), config.configItems.end(), pusher);
+   //   auto pusher = [&j] (const ConfigurationDataItem * item) { j.push_back(*item); };
+   j["configitems"] = config.configItems;
+   //   std::for_each(config.configItems.begin(), config.configItems.end(), pusher);
 }
 
 void from_json(const nlohmann::json & j, NodeConfiguration & config) {
+   if (j.find("nodename") != j.end()) {
+      config.setName(j["package"].get<std::string>());
+   }
+   if (j.find("configitems") != j.end()) {
+      auto items = j["configitems"];
+      for (auto & element : items) {
+         ConfigurationDataItem item = element.get<ConfigurationDataItem>();
+         config.addOrReplace(item);
+      }
+   }
+   
 }
 
 } // namespace

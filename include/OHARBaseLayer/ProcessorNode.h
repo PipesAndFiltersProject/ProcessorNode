@@ -149,6 +149,8 @@ namespace OHARBase {
       
       std::string getConfigItemValue(const std::string & itemName) const;
       
+      const NodeConfiguration & getConfiguration() const;
+      
    private:
       /** The thread function where the handling of the data received by the NetworkReader is done.
        This thread is started in the Node's start() method. */
