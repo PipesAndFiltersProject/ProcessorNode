@@ -6,6 +6,8 @@
 //  Copyright © 2016 Antti Juustila. All rights reserved.
 //
 
+#include <g3log/g3log.hpp>
+
 #include <OHARBaseLayer/NodeConfiguration.h>
 
 namespace OHARBase {
@@ -58,8 +60,10 @@ void NodeConfiguration::addOrReplace(const ConfigurationDataItem & item) {
    auto element = std::find(configItems.begin(), configItems.end(), item);
    if (element != configItems.end()) {
       *element = item;
+   } else {
+      configItems.push_back(item);
    }
-   configItems.push_back(item);
+   LOG(INFO) << "Has config: " << item.getItemName() << " " << item.getItemValue();
 }
 
 void to_json(nlohmann::json & j, const NodeConfiguration & config) {

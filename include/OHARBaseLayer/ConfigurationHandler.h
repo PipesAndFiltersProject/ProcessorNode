@@ -2,8 +2,8 @@
 //  ConfigurationHandler.h
 //  PipesAndFiltersNode
 //
-//  Created by Antti Juustila on 25.11.2013.
-//  Copyright (c) 2013 Antti Juustila. All rights reserved.
+//  Created by Antti Juustila on 15.12.2019.
+//  Copyright (c) 2019 Antti Juustila. All rights reserved.
 //
 
 #pragma once
@@ -17,7 +17,7 @@ namespace OHARBase {
 	class Package;
 	
 	/**
-	 ConfigurationHandler handles ping messages.
+	 ConfigurationHandler handles configuration related messages.
 	 @author Antti Juustila
 	 @see DataHandler
 	 */
@@ -29,7 +29,7 @@ namespace OHARBase {
 		bool consume(Package & data) override;
 		
 	private:
-		/** The processor node used to forward the ping message. */
+		/** The processor node needed to handle the configuration messages. */
 		ProcessorNode & node;
 		/** The tag used in the logging to indicate which object is logging now. */
 		static const std::string TAG;

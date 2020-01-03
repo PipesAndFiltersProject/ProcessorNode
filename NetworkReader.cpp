@@ -75,7 +75,7 @@ namespace OHARBase {
       buffer->fill(0);
 
       using namespace boost::asio::ip;
-      address ipAddr = address_v4::any();
+      remote_endpoint.address(address_v4::any());
       remote_endpoint.port(port);
       
       socket.open(remote_endpoint.protocol());
