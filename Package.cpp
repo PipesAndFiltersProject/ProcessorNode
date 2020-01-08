@@ -34,7 +34,7 @@ namespace OHARBase {
    /** Copy constructor for Package. Copies the passed object.
     @param p The package to copy from. */
    Package::Package(const Package & p)
-   : uid(p.uid), type(p.type), payload("")
+   : uid(p.uid), type(p.type), payload(""), originAddress(p.originAddress), destinationAddress(p.destinationAddress)
    {
       setPayloadVariant(p.payload);
    }
@@ -43,7 +43,8 @@ namespace OHARBase {
     the passed object, transferring the ownership to this object.
     */
    Package::Package(Package && p)
-   : uid(std::move(p.uid)), type(std::move(p.type))
+   :  uid(std::move(p.uid)), type(std::move(p.type)),
+      originAddress(std::move(p.originAddress)), destinationAddress(std::move(p.destinationAddress))
    {
       payload = std::move(p.payload);
    }
@@ -233,6 +234,8 @@ namespace OHARBase {
          uid = p.uid;
          type = p.type;
          setPayloadVariant(p.payload);
+         originAddress = p.originAddress;
+         destinationAddress = p.destinationAddress;
       }
       return *this;
    }
@@ -252,6 +255,8 @@ namespace OHARBase {
          uid = std::move(p.uid);
          type = std::move(p.type);
          payload = std::move(p.payload);
+         originAddress = std::move(p.originAddress);
+         destinationAddress = std::move(p.destinationAddress);
       }
       return *this;
    }
@@ -261,7 +266,10 @@ namespace OHARBase {
       return (uid == pkg.uid);
    }
       
-   /** Externalizes the Package to a JSON object.
+   /**
+    Externalizes the Package to a JSON object. Note that (at least currently) the originAddress and
+    destinationAddress are not externalized to JSON. Addresses are used only by package handlers,
+    NetworkReader and NetworkWriter to route packages.
     @param j The JSON object fill with package contents.
     @param package The package to exernalize.
     */
@@ -271,7 +279,10 @@ namespace OHARBase {
       j["payload"] = package.getPayloadString();
    }
    
-   /** Internalizes the package contents from a JSON structure.
+   /**
+    Internalizes the package contents from a JSON structure. Note that (at least currently) the originAddress and
+    destinationAddress are not internalized from JSON. Addresses are used only by package handlers,
+    NetworkReader and NetworkWriter to route packages.
     @param j The JSON object containing Package data elements.
     @param package The package to initialize from the JSON structure.
     */
