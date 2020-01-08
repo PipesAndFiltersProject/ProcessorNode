@@ -80,16 +80,21 @@ namespace OHARBase {
       
       socket.open(remote_endpoint.protocol());
       socket.bind(remote_endpoint);
+      readSocket();
+   }
 
+   /**
+         Reads data from the opened socket asyncronously.
+    */
+   void NetworkReader::readSocket() {
       socket.async_receive_from(boost::asio::buffer(*buffer),
-                                 remote_endpoint,
-                                 boost::bind(&NetworkReader::handleReceive, this,
-                                             boost::asio::placeholders::error,
-                                             boost::asio::placeholders::bytes_transferred));
-      
+                                remote_endpoint,
+                                boost::bind(&NetworkReader::handleReceive, this,
+                                            boost::asio::placeholders::error,
+                                            boost::asio::placeholders::bytes_transferred));
       LOG(INFO) << TAG << "Async recv ongoing";
    }
-   
+
    /** Handles the incoming data and possible errors. Places finally another read
     to the socket to handle more incoming data.
     @param error Error code
@@ -126,7 +131,7 @@ namespace OHARBase {
          if (running)
          {
             // Make another read request to the socket.
-            start();
+            readSocket();
          }
       }
    }

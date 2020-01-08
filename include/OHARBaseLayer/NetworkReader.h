@@ -43,6 +43,8 @@ namespace OHARBase {
 		
 		void handleReceive(const boost::system::error_code & error, std::size_t bytes_transferred);
 		
+      void readSocket();
+      
 	private:
 				
 		/** The observer of the reader. When the reader receives data from the network,

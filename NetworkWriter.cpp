@@ -101,6 +101,7 @@ namespace OHARBase {
                tmpHost = host;
                tmpPort = port;
                if (p.hasDestination()) {
+                  LOG(INFO) << "Package specific destination exists.";
                   std::vector<std::string> strs;
                   boost::split(strs, p.destination(), boost::is_any_of(":"));
                   if (strs.size() == 2) {
