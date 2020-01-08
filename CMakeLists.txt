@@ -6,7 +6,7 @@ set(LIB_NAME OHARBaseLayer)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-find_package(Boost 1.67.0 REQUIRED COMPONENTS system)
+find_package(Boost 1.70.0 REQUIRED COMPONENTS system)
 find_package(g3logger REQUIRED)
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
@@ -21,14 +21,11 @@ if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
        include/${LIB_NAME}/NodeConfiguration.h include/${LIB_NAME}/Package.h include/${LIB_NAME}/PingHandler.h
        include/${LIB_NAME}/ProcessorNode.h include/${LIB_NAME}/ProcessorNodeObserver.h include/${LIB_NAME}/ConfigurationHandler.h)
 
-   set_target_properties(${LIB_NAME} PROPERTIES COMPILE_FLAGS -fPIC -g -Wall)
-   set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS "-Wl -lpthread")
+   set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
    set_target_properties(${LIB_NAME} PROPERTIES CXX_STANDARD 17)
    target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/> $<INSTALL_INTERFACE:include/${LIB_NAME}> ${Boost_INCLUDE_DIRS} ${G3LOG_INCLUDE_DIRS})
 
-   target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES})
-   target_link_libraries(${LIB_NAME} PUBLIC ${G3LOG_LIBRARIES})
-   target_link_libraries(${LIB_NAME} PRIVATE nlohmann_json::nlohmann_json)
+   target_link_libraries(${LIB_NAME} PUBLIC Boost::system g3logger nlohmann_json::nlohmann_json)
 
    set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "include/${LIB_NAME}/ConfigurationDataItem.h;include/${LIB_NAME}/DataReaderObserver.h;include/${LIB_NAME}/Networker.h;include/${LIB_NAME}/ConfigurationFileReader.h;include/${LIB_NAME}/NodeConfiguration.h;include/${LIB_NAME}/DataFileReader.h;include/${LIB_NAME}/NetworkReader.h;include/${LIB_NAME}/Package.h;include/${LIB_NAME}/DataHandler.h;include/${LIB_NAME}/NetworkReaderObserver.h;include/${LIB_NAME}/PingHandler.h;include/${LIB_NAME}/DataItem.h;include/${LIB_NAME}/NetworkWriter.h;include/${LIB_NAME}/ProcessorNode.h;include/${LIB_NAME}/ProcessorNodeObserver.h;include/${LIB_NAME}/ConfigurationHandler.h")
 
