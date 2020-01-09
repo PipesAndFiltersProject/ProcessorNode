@@ -21,6 +21,9 @@ static const std::string ConfigReadOperation{"read"};
 static const std::string ConfigInfoOperation{"info"};
 static const std::string ConfigSetOperation{"set"};
 
+//TODO: configurator has own socket with reuse_address it uses to listen to broadcasts.
+// Perhaps then multiple nodes can be run on same machine. All receive the same package anyways.
+// Reconfigure messages are sent to node's "own" incoming reader per node.
 
 /**
  Constructs a ConfigurationHandler object. Configuration handler must now about the ProcessorNode
@@ -51,6 +54,7 @@ ConfigurationHandler::~ConfigurationHandler() {
 bool ConfigurationHandler::consume(Package & data) {
    if (data.getType() == Package::Configuration) {
       LOG(INFO) << TAG << "***** Configuration package received! *****";
+      //TODO: if the config package with same uuid has already been received, ignore it.
       // parse data to a student data object
       std::string payload = data.getPayloadString();
       if (payload == ConfigReadOperation) {
@@ -59,6 +63,8 @@ bool ConfigurationHandler::consume(Package & data) {
          // to destination address of Package.
          // Send the package ahead using node.SendData
          // Return true, no one else should handle the package.
+         //TODO: Make sure node name is in configuration file and read as configuration
+         //      and put into the json when sending ahead.
          LOG(INFO) << "Config requested";
          nlohmann::json configuration = node.getConfiguration();
          LOG(INFO) << "Step 1 " << configuration.dump();
