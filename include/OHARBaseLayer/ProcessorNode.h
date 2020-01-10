@@ -112,9 +112,9 @@ namespace OHARBase {
       
       bool configure(const std::string & configFile);
       
-      void setInputSource(const std::string & hostName);
+      void setInputSource(const std::string & port);
+      void setConfSource(const std::string & port);
       void setOutputSink(const std::string & hostName);
-      void setInputSource(const std::string & hostName, int portNumber);
       void setOutputSink(const std::string & hostName, int portNumber);
       
       void setDataFileName(const std::string & fileName);
@@ -125,9 +125,7 @@ namespace OHARBase {
       
       void addHandler(DataHandler * h);
       
-      // MARK: -
-      const std::string & getName() const;
-      
+      // MARK: -      
       void start();
       void stop();
       bool isRunning() const;
@@ -163,6 +161,8 @@ namespace OHARBase {
       
       void initiateClientAppShutdown();
       
+      void handlePackagesFrom(NetworkReader & reader);
+      
    protected:
       
       /** The file name of the data file Node uses to read input data. */
@@ -183,6 +183,8 @@ namespace OHARBase {
       NetworkReader * networkReader;
       /** The writer for sending data to the next Node. May be null. */
       NetworkWriter * networkWriter;
+      /** The configuration reader for reading configuration messages. */
+      NetworkReader * configReader;
       
       /** The list of DataHandlers to process the incoming data packages.
        The assumption is that the handlers are put in the list in a following manner:<br />

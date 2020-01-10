@@ -28,9 +28,6 @@ namespace OHARBase {
 		NodeConfiguration() = default;
 		virtual ~NodeConfiguration();
 		
-      void setName(const std::string & nodeName);
-      const std::string & getName() const;
-      
       virtual void handleNewItem(std::unique_ptr<DataItem> item) override;
 		
 		std::string getValue(const std::string & configName) const;
@@ -45,8 +42,6 @@ namespace OHARBase {
       void addOrReplace(const ConfigurationDataItem & item);
       
 	private:
-      /** The name of the node. */
-      std::string name;
         /** Configuration items of the node. */
 		std::vector<ConfigurationDataItem> configItems;
       

@@ -35,31 +35,13 @@ namespace OHARBase {
     @param obs The observer who gets notified of network events.
     @param io_s The boost asio io service.
     */
-   NetworkReader::NetworkReader(const std::string & hostName,
-                                NetworkReaderObserver & obs,
-                                boost::asio::io_service & io_s)
-   :		Networker(hostName, io_s),
-   observer(obs)
+   NetworkReader::NetworkReader(int port,
+                              NetworkReaderObserver & obs,
+                              boost::asio::io_service & io_s, bool reuseAddress)
+   :		Networker("", port, io_s), observer(obs), doReuseAddress(reuseAddress)
    {
    }
    
-   /**
-    Constructor to create the reader with host name. See the
-    constructor of Networker class about handling the parameters.
-    @param hostName the host to reading data. In practise,
-    this should always be local host for reader, i.e. 127.0.0.1.
-    @param portNumber The port to read data from.
-    @param obs The observer who gets notified of network events.
-    @param io_s The boost asio io service.
-    */
-   NetworkReader::NetworkReader(const std::string & hostName,
-                                int portNumber,
-                                NetworkReaderObserver & obs,
-                                boost::asio::io_service & io_s)
-   :		Networker(hostName, portNumber, io_s),
-   observer(obs)
-   {
-   }
    
    NetworkReader::~NetworkReader() {
    }
@@ -79,6 +61,9 @@ namespace OHARBase {
       remote_endpoint.port(port);
       
       socket.open(remote_endpoint.protocol());
+      if (doReuseAddress) {
+         socket.set_option(boost::asio::ip::udp::socket::reuse_address(true));
+      }
       socket.bind(remote_endpoint);
       readSocket();
    }

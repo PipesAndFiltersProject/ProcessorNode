@@ -12,15 +12,6 @@
 
 namespace OHARBase {
 
-void NodeConfiguration::setName(const std::string & nodeName) {
-   name = nodeName;
-}
-
-const std::string & NodeConfiguration::getName() const {
-   return name;
-}
-
-
 /**
  Destructor destroys the configuration data it holds.
  */
@@ -67,24 +58,17 @@ void NodeConfiguration::addOrReplace(const ConfigurationDataItem & item) {
 }
 
 void to_json(nlohmann::json & j, const NodeConfiguration & config) {
-   j = nlohmann::json{{"nodename", config.getName()}};
-   //   auto pusher = [&j] (const ConfigurationDataItem * item) { j.push_back(*item); };
    j["configitems"] = config.configItems;
-   //   std::for_each(config.configItems.begin(), config.configItems.end(), pusher);
 }
 
 void from_json(const nlohmann::json & j, NodeConfiguration & config) {
-   if (j.find("nodename") != j.end()) {
-      config.setName(j["package"].get<std::string>());
-   }
    if (j.find("configitems") != j.end()) {
       auto items = j["configitems"];
       for (auto & element : items) {
          ConfigurationDataItem item = element.get<ConfigurationDataItem>();
          config.addOrReplace(item);
       }
-   }
-   
+   }   
 }
 
 } // namespace

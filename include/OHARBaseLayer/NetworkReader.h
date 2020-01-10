@@ -26,8 +26,7 @@ namespace OHARBase {
 	 */
 	class NetworkReader : public Networker {
 	public:
-		NetworkReader(const std::string & hostName, NetworkReaderObserver & obs, boost::asio::io_service & io_s);
-		NetworkReader(const std::string & hostName, int portNumber, NetworkReaderObserver & obs, boost::asio::io_service & io_s);
+		NetworkReader(int port, NetworkReaderObserver & obs, boost::asio::io_service & io_s, bool reuseAddress = false);
 		~NetworkReader();
 		
 		virtual void start() override;
@@ -54,6 +53,9 @@ namespace OHARBase {
 		
       /** The address of the sender whose packages we are handling. */
       boost::asio::ip::udp::endpoint remote_endpoint;
+      
+      /** Reuse the address (port); needed for listening broadcast messages if several nodes run on the same machine. */
+      bool doReuseAddress;
       
 		/** Tag for logging. */
 		static const std::string TAG;

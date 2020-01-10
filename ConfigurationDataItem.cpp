@@ -24,14 +24,18 @@ ConfigurationDataItem::ConfigurationDataItem(const ConfigurationDataItem & item)
 }
 
 const std::string ConfigurationDataItem::TAG{"ConfigReader"};
-/** Configuration data item name for ProcessorNode incoming address. */
+/** Configuration data item name for ProcessorNode incoming address (port). */
 const std::string ConfigurationDataItem::CONF_INPUTADDR{"input"};
+/** Configuration data item name for ProcessorNode configuration address (port). */
+const std::string ConfigurationDataItem::CONF_CONFADDR{"config"};
 /** Configuration data item name for ProcessorNode outgoing address. */
 const std::string ConfigurationDataItem::CONF_OUTPUTADDR{"output"};
 /** Configuration data item name for ProcessorNode input data file. */
 const std::string ConfigurationDataItem::CONF_INPUTFILE{"filein"};
 /** Configuration data item name for ProcessorNode output data file. */
 const std::string ConfigurationDataItem::CONF_OUTPUTFILE{"fileout"};
+/** Configuration data item name for ProcessorNode's name. */
+const std::string ConfigurationDataItem::CONF_NODENAME{"name"};
 
 /**
  Sets the configuration data item name.
@@ -88,7 +92,6 @@ bool ConfigurationDataItem::operator == (const ConfigurationDataItem & item) con
 bool ConfigurationDataItem::parse(const std::string & fromString, const std::string & contentType) {
    std::vector<std::string> strings;
    boost::split(strings, fromString, boost::is_any_of("\t"));
-   LOG(INFO) << TAG << "String item count: " << strings.size();
    if (contentType == "nodeconfiguration" && strings.size() == 2) {
       setItemName(strings.at(0));
       setItemValue(strings.at(1));

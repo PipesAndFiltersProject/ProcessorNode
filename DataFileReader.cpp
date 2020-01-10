@@ -51,7 +51,6 @@ namespace OHARBase {
         std::getline(file, contentType);
         do {
             std::getline(file, str);
-            LOG(INFO) << TAG << "Read line: " << str;
             if (file.good() && str.length() > 0) {
                std::unique_ptr<DataItem> item = parse(str, contentType);
                 if (item) {

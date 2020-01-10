@@ -79,8 +79,8 @@ bool ConfigurationHandler::consume(Package & data) {
           "payload" :
           {
           "operation" : "info",
-          "nodename" : "node name",
           "items" : [
+          {"nodename" : "node name"},
           {"config-item" : "item-value"},
           {"config-item2" : "item-value"}
           ]
@@ -94,8 +94,8 @@ bool ConfigurationHandler::consume(Package & data) {
           "payload" :
           {
              "operation" : "set",
-             "nodename" : "node name",
              "items" : [
+                {"nodename" : "node name"},
                 {"config-item" : "item-value"},
                 {"config-item2" : "item-value"}
              ]

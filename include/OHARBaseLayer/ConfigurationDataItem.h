@@ -28,9 +28,11 @@ public:
    ConfigurationDataItem() = default;
    
    static const std::string CONF_INPUTADDR;
+   static const std::string CONF_CONFADDR;
    static const std::string CONF_OUTPUTADDR;
    static const std::string CONF_INPUTFILE;
    static const std::string CONF_OUTPUTFILE;
+   static const std::string CONF_NODENAME;
    
    void setItemName(const std::string &item);
    void setItemValue(const std::string &value);
