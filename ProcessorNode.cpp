@@ -618,8 +618,6 @@ void ProcessorNode::handlePackagesFrom(NetworkReader & reader) {
  returns true, indicating that the package has been handled and should not be passed
  ahead to next handlers anymore. A Handler can of course handle the package and still return false,
  enabling multiple handlers for a single package.
- TODO: Investigate if it is ok to multiple threads to call this method simultaneously. This happens now,
- since main thread (user), command handler as well as incoming data handler threads do all call it.
  @param package The data package to handle. */
 void ProcessorNode::passToHandlers(Package & package) {
    LOG(INFO) << TAG << "Passing a package to handlers, count: " << handlers.size();
