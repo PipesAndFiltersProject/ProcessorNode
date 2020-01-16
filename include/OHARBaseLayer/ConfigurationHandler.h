@@ -15,7 +15,7 @@ namespace OHARBase {
 	
 	class ProcessorNode;
 	class Package;
-	
+
 	/**
 	 ConfigurationHandler handles configuration related messages.
 	 @author Antti Juustila
@@ -27,7 +27,7 @@ namespace OHARBase {
 		virtual ~ConfigurationHandler();
 		
 		bool consume(Package & data) override;
-		
+      
 	private:
 		/** The processor node needed to handle the configuration messages. */
 		ProcessorNode & node;

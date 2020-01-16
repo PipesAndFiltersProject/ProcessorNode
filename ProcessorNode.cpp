@@ -31,9 +31,8 @@ const std::string KNullString{""};
  @param aName The name of the processor node.
  @param obs The observer of the node who gets event and error notifications of activities in the node. */
 ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
-: config(nullptr), networkReader(nullptr), networkWriter(nullptr), configReader(nullptr), running(false),
-nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
-commandHandlerThread(nullptr), hasIncoming(false), observer(obs)
+: config(nullptr), networkReader(nullptr), networkWriter(nullptr), configReader(nullptr), configWriter(nullptr), running(false), nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
+   commandHandlerThread(nullptr), hasIncoming(false), observer(obs)
 {
    LOG(INFO) << TAG << "Creating ProcessorNode.";
    handlers.push_back(new PingHandler(*this));
@@ -66,11 +65,24 @@ ProcessorNode::~ProcessorNode() {
          }
          delete configReader;
       }
+      if (configWriter) {
+         if (configWriter->isRunning()) {
+            configWriter->stop();
+         }
+      }
+      if (ioServiceThread && ioServiceThread->joinable()) {
+         LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
+         ioServiceThread->detach();
+         delete ioServiceThread; ioServiceThread = nullptr;
+      }
+
    } catch (const std::exception & e) {
       LOG(INFO) << "EXCEPTION in destroying processornode!";
    }
    LOG(INFO) << TAG << "..ProcessorNode destroyed.";
 }
+
+// MARK: Configuration
 
 /**
  Configures the node using the provided configuration file. For file details, see
@@ -91,10 +103,12 @@ bool ProcessorNode::configure(const std::string & configFile) {
             showUIMessage("Configuration for node:");
             std::string cvalue = config->getValue(ConfigurationDataItem::CONF_INPUTADDR);
             setInputSource(cvalue);
-            cvalue = config->getValue(ConfigurationDataItem::CONF_CONFADDR);
-            setConfSource(cvalue);
+            cvalue = config->getValue(ConfigurationDataItem::CONF_CONFINADDR);
+            setConfigurationInputSource(cvalue);
             cvalue = config->getValue(ConfigurationDataItem::CONF_OUTPUTADDR);
             setOutputSink(cvalue);
+            cvalue = config->getValue(ConfigurationDataItem::CONF_CONFOUTADDR);
+            createConfigurationOutputWriter();
             cvalue = config->getValue(ConfigurationDataItem::CONF_INPUTFILE);
             setDataFileName(cvalue);
             cvalue = config->getValue(ConfigurationDataItem::CONF_OUTPUTFILE);
@@ -144,7 +158,7 @@ void ProcessorNode::setInputSource(const std::string & port) {
  config data is read. Node listens for arrivind configuration messages from this port
  and then handles it using the ConfigurationHandler object.
  @param hostName The host name, e.g. "1234". */
-void ProcessorNode::setConfSource(const std::string & port) {
+void ProcessorNode::setConfigurationInputSource(const std::string & port) {
    if (configReader) {
       delete configReader;
       configReader = nullptr;
@@ -156,13 +170,43 @@ void ProcessorNode::setConfSource(const std::string & port) {
       int iPort = std::stoi(port);
       // Note the last param: configreader shares the listening port with other nodes,
       // because several nodes may run on the same machine and all nodes should listen
-      // to the same port for config broadcast messages.
+      // to the same port for config broadcast messages. Value tells the reader to reuse the port
+      // sharing it with other nodes running possibly on the same machine.
       configReader = new NetworkReader(iPort, *this, io_service, true);
    } else {
       showUIMessage("This node has no configuration port to read config messages from.");
    }
 }
 
+/** Creates the configuration output writer object. The address to send data is not known and not needed at this point.
+ Instead, the writer takes the Configurator address from the incoming configuration message and replies to
+ that same address. That address is placed to the Package as origin address, and set to as the destination address of the package when sending it ahead. Thus, the NetworkWriter sees the package has a destination address and uses that, always.
+ The confifguration output writer is not created if the "usual" writer is created, since then it can be used to send
+ also the configuration responses to the Configurator. */
+void ProcessorNode::createConfigurationOutputWriter() {
+   // Check that we do not have the writer already created...
+   if (!networkWriter) {
+      // And that the configured output address does not exist (and writer not yet created)...
+      std::string writerHost = getConfigItemValue(ConfigurationDataItem::CONF_OUTPUTADDR);
+      if (writerHost.length() == 0 || writerHost == "null") {
+         LOG(INFO) << "No usual networkWriter in this Node so creating a config writer.";
+         // OK there should be no writer, so we need to create the config writer to be able to send config responses.
+         if (configWriter) {
+            delete configWriter;
+            configWriter = nullptr;
+         }
+         
+         // The host and port number does not matter since config Packages always must contain the address where to
+         // send the configuration responses.
+         configWriter = new NetworkWriter("localhost", 12345, io_service);
+      }
+   }
+}
+
+/**
+ If you need to read the configuration information of the ProcessorNode, call this method.
+ @return The node configuration.
+ */
 const NodeConfiguration & ProcessorNode::getConfiguration() const {
    return *config;
 }
@@ -264,6 +308,7 @@ bool ProcessorNode::isRunning() const {
    return running;
 }
 
+// MARK: Starting the node
 
 /** Starts the Node. This includes starting the network reader and/or writer for
  communicating to other Nodes, starting the data handling thread, and looping in a separate
@@ -300,20 +345,29 @@ void ProcessorNode::start() {
          LOG(INFO) << "Start the configuration reader";
          configReader->start();
       }
+      if (configWriter) {
+         LOG(INFO) << "Start the config writer.";
+         configWriter->start();
+      }
       // Start the sending network object
       if (networkWriter) {
          LOG(INFO) << TAG << "Start the output writer";
          networkWriter->start();
       }
-      
       if (networkReader) {
          LOG(INFO) << TAG << "Start the network receive handler thread...";
          incomingHandlerThread = new std::thread(&ProcessorNode::threadFunc, this);
       }
       
       LOG(INFO) << "Starting io service thread.";
-      ioServiceThread = new std::thread([this] {return io_service.run();} );
-      
+      if (!ioServiceThread) {
+         ioServiceThread = new std::thread([this]
+         {
+            boost::asio::io_context::count_type count = io_service.run();
+            LOG(INFO) << "io_service run exited with count " << count;
+            return count;
+         } );
+      }
    } catch (const std::exception & e) {
       stop();
       std::stringstream sstream;
@@ -359,7 +413,7 @@ void ProcessorNode::start() {
     */
    //MARK: Command handler thread.
    commandHandlerThread = new std::thread([this] {
-      while (running && ((networkReader && networkReader->isRunning()) || (networkWriter && networkWriter->isRunning())))
+      while (running)
       {
          
          {
@@ -367,6 +421,7 @@ void ProcessorNode::start() {
             condition.wait(ulock, [this] {
                commandGuard.lock();
                std::string cmd = command;
+               command = "";
                commandGuard.unlock();
                if (cmd.length() > 0) {
                   LOG(INFO) << "Command received: " << cmd;
@@ -410,7 +465,7 @@ void ProcessorNode::start() {
                   }
                }
                
-               return !running;
+               return command.length() > 0 || !running; // !running;
             });
          }
       }
@@ -418,6 +473,7 @@ void ProcessorNode::start() {
          LOG(INFO) << "Got shutdown package so asking client app to shut down.";
          stop();
       }
+      LOG(INFO) << "Exiting command handler thread.";
    });
    LOG(INFO) << "Exiting the ProcessorNode::start().";
 }
@@ -430,19 +486,24 @@ void ProcessorNode::stop() {
    running = false;
    LOG(INFO) << TAG << "Notify all";
    condition.notify_all();
-   LOG(INFO) << TAG << "Stopping io service...";
-   if (!io_service.stopped()) {
-      io_service.stop();
-   }
+//   LOG(INFO) << TAG << "Stopping io service...";
+//   if (!io_service.stopped()) {
+//      io_service.stop();
+//   }
    if (networkReader && networkReader->isRunning()) {
       LOG(INFO) << TAG << "Stopping input...";
       networkReader->stop();
       LOG(INFO) << TAG << "Stopped input";
    }
    if (configReader && configReader->isRunning()) {
-      LOG(INFO) << TAG << "Stopping config...";
+      LOG(INFO) << TAG << "Stopping config reader...";
       configReader->stop();
-      LOG(INFO) << TAG << "Stopped input";
+      LOG(INFO) << TAG << "Stopped config reader";
+   }
+   if (configWriter && configWriter->isRunning()) {
+      LOG(INFO) << TAG << "Stopping config writer...";
+      configWriter->stop();
+      LOG(INFO) << TAG << "Stopped config writer";
    }
    // Close and destroy the sending network object
    if (networkWriter && networkWriter->isRunning()) {
@@ -463,11 +524,6 @@ void ProcessorNode::stop() {
       LOG(INFO) << TAG << "Waiting for the commandHandlerThread thread...";
       commandHandlerThread->detach();
       delete commandHandlerThread; commandHandlerThread = nullptr;
-   }
-   if (ioServiceThread && ioServiceThread->joinable()) {
-      LOG(INFO) << TAG << "Waiting for the ioServiceThread thread...";
-      ioServiceThread->detach();
-      delete ioServiceThread; ioServiceThread = nullptr;
    }
    
    LOG(INFO) << TAG << "...threads finished, exiting ProcessorNode::stop";
@@ -501,6 +557,11 @@ void ProcessorNode::sendData(const Package & data) {
       LOG(INFO) << TAG << "Telling network writer to send a package.";
       networkWriter->write(data);
       updatePackageCountInQueue("net-out", networkWriter->packagesInQueue());
+   // If node hasn't got the next node, it uses the config writer to send config packages (only).
+   } else if (configWriter && data.getType() == Package::Configuration) {
+      showUIMessage("Sending configuration response message to Configurator.");
+      LOG(INFO) << "No networkWriter so using configWriter to send a response to Configurator";
+      configWriter->write(data);
    }
 }
 
@@ -515,19 +576,19 @@ void ProcessorNode::sendData(const Package & data) {
  */
 void ProcessorNode::passToNextHandlers(const DataHandler * current, Package & package) {
    bool found = false;
-   for (std::list<DataHandler*>::iterator iter = handlers.begin(); iter != handlers.end(); iter++) {
-      LOG(INFO) << TAG << "Offering data to next Handler...";
-      if (!found && current == *iter) {
-         found = true;
-         LOG(INFO) << TAG << "Found current handler....";
-         continue;
-      }
-      if (found) {
-         LOG(INFO) << TAG << "..so offering the package to the rest.";
-         if ((*iter)->consume(package)) {
-            LOG(INFO) << TAG << "Consumer returned true, not offering forward anymore";
-            break;
-         }
+   // Find the current handler from the container.
+   auto iter = std::find(std::begin(handlers), std::end(handlers), current);
+   // if it was found, advance to the next handler.
+   if (iter != handlers.end()) {
+      iter++;
+      // If there are more handlers, let them consume the package.
+      if (iter != handlers.end()) {
+         std::all_of(iter, std::end(handlers), [&](DataHandler * handler) {
+            if (handler->consume(package)) {
+               return false;  // Stop if the handler thinks it should not be handled by rest of the handlers.
+            }
+            return true; // Continue passing the Package to the next handler.
+         });
       }
    }
 }
@@ -622,14 +683,12 @@ void ProcessorNode::handlePackagesFrom(NetworkReader & reader) {
 void ProcessorNode::passToHandlers(Package & package) {
    LOG(INFO) << TAG << "Passing a package to handlers, count: " << handlers.size();
    try {
-      for (std::list<DataHandler*>::iterator iter = handlers.begin(); iter != handlers.end(); iter++) {
+      for (DataHandler * handler : handlers) {
          LOG(INFO) << TAG << "Offering data to next Handler...";
-         if ((*iter)->consume(package)) {
+         if (handler->consume(package)) {
             LOG(INFO) << TAG << "Handler returned true, not offering forward anymore";
             break;
          }
-         //            using namespace std::chrono_literals;
-         //            std::this_thread::sleep_for(50ms);
       }
    } catch (const std::exception & e) {
       std::stringstream sstream;
@@ -638,7 +697,11 @@ void ProcessorNode::passToHandlers(Package & package) {
    }
 }
 
-
+/**
+ This method takes care of handling the statistics related to the Packages in different queues in the Node.
+ Each queue has a name, and number of packages currently in the queue. This is updated when Packages arrive and leave.
+ Status of the queues can then be updated in the UI by calling showUIMessage, with event QueueStatusEvent.
+ */
 void ProcessorNode::updatePackageCountInQueue(const std::string & queueName, int packageCount)  {
    queue_package_type::iterator iter = queuePackageCounts.find(queueName);
    if (iter != queuePackageCounts.end()) {

@@ -27,7 +27,8 @@ const std::string ConfigurationDataItem::TAG{"ConfigReader"};
 /** Configuration data item name for ProcessorNode incoming address (port). */
 const std::string ConfigurationDataItem::CONF_INPUTADDR{"input"};
 /** Configuration data item name for ProcessorNode configuration address (port). */
-const std::string ConfigurationDataItem::CONF_CONFADDR{"config"};
+const std::string ConfigurationDataItem::CONF_CONFINADDR{"config-in"};
+const std::string ConfigurationDataItem::CONF_CONFOUTADDR{"config-out"};
 /** Configuration data item name for ProcessorNode outgoing address. */
 const std::string ConfigurationDataItem::CONF_OUTPUTADDR{"output"};
 /** Configuration data item name for ProcessorNode input data file. */

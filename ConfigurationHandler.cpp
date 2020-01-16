@@ -119,6 +119,7 @@ bool ConfigurationHandler::consume(Package & data) {
    return false; // Package was not handled, pass to other handlers.
 }
 
+
 } //namespace
 
 

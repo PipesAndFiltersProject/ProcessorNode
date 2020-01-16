@@ -167,9 +167,9 @@ namespace OHARBase {
          while (!msgQueue.empty()) {
             msgQueue.pop();
          }
-         condition.notify_all();
          socket.cancel();
          socket.close();
+         condition.notify_all();
          if (threader->joinable()) {
             threader->detach();
          }

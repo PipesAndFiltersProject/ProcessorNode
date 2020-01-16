@@ -113,7 +113,8 @@ namespace OHARBase {
       bool configure(const std::string & configFile);
       
       void setInputSource(const std::string & port);
-      void setConfSource(const std::string & port);
+      void setConfigurationInputSource(const std::string & port);
+      void createConfigurationOutputWriter();
       void setOutputSink(const std::string & hostName);
       void setOutputSink(const std::string & hostName, int portNumber);
       
@@ -185,6 +186,9 @@ namespace OHARBase {
       NetworkWriter * networkWriter;
       /** The configuration reader for reading configuration messages. */
       NetworkReader * configReader;
+      /** The configuration writer for sendng config responses. Created only if there is no networkWriter (output config
+       element is nonexistent or null. Otherwise networkWriter is used also for sending config responses. */
+      NetworkWriter * configWriter;
       
       /** The list of DataHandlers to process the incoming data packages.
        The assumption is that the handlers are put in the list in a following manner:<br />
@@ -220,7 +224,7 @@ namespace OHARBase {
       std::mutex commandGuard;
       
       // A container to keep track on which queues hold how many packages now, how many packages at max during batch run.
-      typedef std::map<std::string, std::pair<int,int>> queue_package_type;
+      using queue_package_type = std::map<std::string, std::pair<int,int>>;
       queue_package_type queuePackageCounts;
       
       /** Logging tag. */

@@ -51,7 +51,7 @@ namespace OHARBase {
    /** Starts the reader. If necessary, connects to the endpoint and then does
     asynchronous read. */
    void NetworkReader::start() {
-      LOG(INFO) << TAG << "Start reading for data...";
+      LOG(INFO) << TAG << "Start reading for data from port: " << port;
       running = true;
       
       buffer->fill(0);
