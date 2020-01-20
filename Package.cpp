@@ -147,7 +147,6 @@ namespace OHARBase {
          return *item;
       }
       return emptyString;
-
    }
    
    /** Sets the unparsed data for the Package.

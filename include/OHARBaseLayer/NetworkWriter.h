@@ -46,6 +46,8 @@ namespace OHARBase {
 							 std::size_t bytes_transferred);
 	private:
 		
+      /** Has the resolved endpoint to use for sending data. */
+      boost::asio::ip::udp::endpoint resolvedEndpoint;
 		/** Contains the data which is currenty being sent, in a string. */
 		std::string currentlySending;
 		/** The condition variable used to signal the sending thread that new data is available
