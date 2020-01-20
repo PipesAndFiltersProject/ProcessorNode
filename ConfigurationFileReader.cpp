@@ -10,8 +10,8 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/ConfigurationFileReader.h>
-#include <OHARBaseLayer/ConfigurationDataItem.h>
+#include <ProcessorNode/ConfigurationFileReader.h>
+#include <ProcessorNode/ConfigurationDataItem.h>
 
 
 namespace OHARBase {

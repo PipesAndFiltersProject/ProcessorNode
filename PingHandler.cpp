@@ -8,9 +8,9 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/PingHandler.h>
-#include <OHARBaseLayer/ProcessorNode.h>
-#include <OHARBaseLayer/Package.h>
+#include <ProcessorNode/PingHandler.h>
+#include <ProcessorNode/ProcessorNode.h>
+#include <ProcessorNode/Package.h>
 
 namespace OHARBase {
    

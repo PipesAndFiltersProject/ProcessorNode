@@ -12,7 +12,7 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/ConfigurationDataItem.h>
+#include <ProcessorNode/ConfigurationDataItem.h>
 
 namespace OHARBase {
 

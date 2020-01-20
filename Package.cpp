@@ -14,8 +14,8 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/Package.h>
-#include <OHARBaseLayer/DataItem.h>
+#include <ProcessorNode/Package.h>
+#include <ProcessorNode/DataItem.h>
 
 
 namespace OHARBase {

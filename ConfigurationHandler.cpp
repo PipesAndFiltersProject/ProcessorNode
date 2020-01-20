@@ -8,10 +8,10 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/ConfigurationHandler.h>
-#include <OHARBaseLayer/ProcessorNode.h>
-#include <OHARBaseLayer/Package.h>
-#include <OHARBaseLayer/NodeConfiguration.h>
+#include <ProcessorNode/ConfigurationHandler.h>
+#include <ProcessorNode/ProcessorNode.h>
+#include <ProcessorNode/Package.h>
+#include <ProcessorNode/NodeConfiguration.h>
 
 namespace OHARBase {
 

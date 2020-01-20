@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(OHARBaseLayerProject VERSION 1.0.0 LANGUAGES CXX)
+project(ProcessorNodeProject VERSION 1.0.0 LANGUAGES CXX)
 
 set(LIB_NAME ProcessorNode)
 
@@ -30,7 +30,7 @@ if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
    set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "include/${LIB_NAME}/ConfigurationDataItem.h;include/${LIB_NAME}/DataReaderObserver.h;include/${LIB_NAME}/Networker.h;include/${LIB_NAME}/ConfigurationFileReader.h;include/${LIB_NAME}/NodeConfiguration.h;include/${LIB_NAME}/DataFileReader.h;include/${LIB_NAME}/NetworkReader.h;include/${LIB_NAME}/Package.h;include/${LIB_NAME}/DataHandler.h;include/${LIB_NAME}/NetworkReaderObserver.h;include/${LIB_NAME}/PingHandler.h;include/${LIB_NAME}/DataItem.h;include/${LIB_NAME}/NetworkWriter.h;include/${LIB_NAME}/ProcessorNode.h;include/${LIB_NAME}/ProcessorNodeObserver.h;include/${LIB_NAME}/ConfigurationHandler.h")
 
    install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME})
-   install(EXPORT ${LIB_NAME}Targets FILE ${LIB_NAME}Targets.cmake NAMESPACE OHARBaseLayer:: DESTINATION lib/cmake/${LIB_NAME})
+   install(EXPORT ${LIB_NAME}Targets FILE ${LIB_NAME}Targets.cmake NAMESPACE ProcessorNode:: DESTINATION lib/cmake/${LIB_NAME})
    install(FILES ${LIB_NAME}Config.cmake DESTINATION lib/cmake/${LIB_NAME})
 
    export(TARGETS ${LIB_NAME} FILE ${LIB_NAME}Targets.cmake)

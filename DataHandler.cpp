@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#include <OHARBaseLayer/DataHandler.h>
+#include <ProcessorNode/DataHandler.h>
 
 namespace OHARBase {
 

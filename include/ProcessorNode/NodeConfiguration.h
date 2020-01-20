@@ -11,8 +11,8 @@
 
 #include <vector>
 
-#include <OHARBaseLayer/ConfigurationDataItem.h>
-#include <OHARBaseLayer/DataReaderObserver.h>
+#include <ProcessorNode/ConfigurationDataItem.h>
+#include <ProcessorNode/DataReaderObserver.h>
 
 namespace OHARBase {
 

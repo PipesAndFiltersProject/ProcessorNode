@@ -8,7 +8,7 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/NodeConfiguration.h>
+#include <ProcessorNode/NodeConfiguration.h>
 
 namespace OHARBase {
 

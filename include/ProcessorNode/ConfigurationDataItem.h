@@ -10,7 +10,7 @@
 #define ConfigurationDataItem_h
 
 
-#include <OHARBaseLayer/DataItem.h>
+#include <ProcessorNode/DataItem.h>
 
 #include <nlohmann/json.hpp>
 

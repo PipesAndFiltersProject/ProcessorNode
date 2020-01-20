@@ -19,8 +19,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include <OHARBaseLayer/NetworkReader.h>
-#include <OHARBaseLayer/NetworkReaderObserver.h>
+#include <ProcessorNode/NetworkReader.h>
+#include <ProcessorNode/NetworkReaderObserver.h>
 
 
 namespace OHARBase {

@@ -13,14 +13,14 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/ProcessorNode.h>
-#include <OHARBaseLayer/NetworkReader.h>
-#include <OHARBaseLayer/NetworkWriter.h>
-#include <OHARBaseLayer/PingHandler.h>
-#include <OHARBaseLayer/DataFileReader.h>
-#include <OHARBaseLayer/NodeConfiguration.h>
-#include <OHARBaseLayer/ConfigurationFileReader.h>
-#include <OHARBaseLayer/ConfigurationHandler.h>
+#include <ProcessorNode/ProcessorNode.h>
+#include <ProcessorNode/NetworkReader.h>
+#include <ProcessorNode/NetworkWriter.h>
+#include <ProcessorNode/PingHandler.h>
+#include <ProcessorNode/DataFileReader.h>
+#include <ProcessorNode/NodeConfiguration.h>
+#include <ProcessorNode/ConfigurationFileReader.h>
+#include <ProcessorNode/ConfigurationHandler.h>
 
 namespace OHARBase {
 

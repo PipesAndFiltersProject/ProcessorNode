@@ -19,7 +19,7 @@
 
 #include <g3log/g3log.hpp>
 
-#include <OHARBaseLayer/NetworkWriter.h>
+#include <ProcessorNode/NetworkWriter.h>
 
 
 namespace OHARBase {
