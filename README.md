@@ -36,6 +36,8 @@ An example of such kind of an arragement would be an environmental observation s
 
 ProcessorNode has been implemented in standard C++ version 17. Implementation is compiler and OS independent.
 
+### Communication and Packages
+
 Communication between the Nodes happens over UDP protocol, using JSON messages called *packages*. JSON payload is application specific. Payload must be included in a package:
 
 ```JSON
@@ -47,11 +49,13 @@ Communication between the Nodes happens over UDP protocol, using JSON messages c
 ```
 Each package has a globally unique id, which can be used to track how packages are delivered through the netlwork of Nodes.
 
-ProcessorNode takes care of parsing and creating the package id (UUID value) and type elements, applications specific code must take care of handling the payload. Application specific playload can be whatever text, but usually it is JSON. 
+ProcessorNode takes care of parsing and creating the "package" id (UUID value) and "type" elements, applications specific code must take care of handling the "payload". Application specific playload can be text, but usually it is JSON. 
 
-The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. Effectively this enables remote configuration of the nodes. All other payload contents must be handled by the application specific code outside ProcessorNode.
+The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. Effectively this enables remote configuration of the nodes. All other payload contents must be handled by the application specific code outside of ProcessorNode.
 
-As implied above, the Nodes can be *configured*. Configuration can be done by sending configuration packages, but also (and more simply) using configuration files.
+### Configuration 
+
+As implied above, the Nodes can be *configured*. Configuration can be done by sending configuration packages to Nodes, but also (and more simply) using configuration files.
 
 Configuration file for a Node should include at least:
 * the name of the Node,
@@ -60,12 +64,28 @@ Configuration file for a Node should include at least:
 * the optional input data file a Node can read to handle data in batches. Data file format is tsv, but the contents is application specific,
 * the optional output data file a Node can write data to. No special formatting requirements exist.
 
-If the application wants to use the ProcessorNode remote configuration features, it additionally should include:
+If the application wants to use the ProcessorNode remote configuration features, configuration file should additionally include:
 * A port listening for configuration request messages (UDP broadcast messages) from a remote Configurator app
     * this port should be the same for all Nodes in the installation, since Configurator app does not have information on which machines Nodes are installed and which and ports Nodes are listening to. So a single port number should be configured for all Nodes
 * If the Node does not have an output to the Next node, which can also be used to send responses to configuration requests, a configuration output should be created.
 
 Additionally, configuration file may include application specific configuration items, as seen in the DirWatcher example app (discussed below).
+
+An example of a configuration file looks like this (elements on a line *must* be tab separated):
+
+```
+nodeconfiguration
+name        Exercise Information
+config-in   10001
+input       50002
+output      192.168.1.165:50003
+filein      /Users/juustila/StudentPassing/exercise-info.txt
+fileout     /Users/juustila/StudentPassing/some-repornting-data.txt
+```
+First line of a configuration file must always have the word nodeconfiguration, and nothing else.
+
+Then, the file is describing a Node named "Exercise information", having a port listening to config broadcast messages in port 10001, receiving data packages from previous Node from port 50002, sending packages to next Node at 192.168.1.165:50003, readind data from tsv file "exercise-info.txt" and also writing some reporting data to a file.
+
 
 ## Dependencies
 
@@ -122,11 +142,7 @@ target_link_libraries(AppName ProcessorNode::ProcessorNode ...)
 
 Then include the necessary headers from the lib into your app code, use the implementation and build and link. 
 
-## Usage
-
-An example app using ProcessorNode can be found in the [DirWatcher](https://bitbucket.org/anttijuu/dirwatcher) project. It follows the fan-in style of architecture explained above.
-
-DirWatcher enables creating Nodes on computers which observe certain directories on the installed computer. When a change occurs in the directory (file is edited, created, renamed or deleted), the Node will send a JSON package ahead to the next Node, containing information about the file system event. The last Node then exports the change information into an xml or json file (depending on configuration), and a web page can display the events, as they are happening, to the user(s).
+## Usage and example app
 
 The basic usage of ProcessorNode includes:
 
@@ -138,5 +154,26 @@ The basic usage of ProcessorNode includes:
 4. Adding *handlers* implemented in step 2 to handle application specific data items implemented in step 1.
     * see DataHandler and extensions of it from DirWatcher as examples) 
 5. Calling ProcessorNode.start() to begin processing incoming/outgoing data packages according to application specific implementation.
-    
-    
+
+### Example project
+
+An example app build on top of ProcessorNode can be found in the [DirWatcher](https://bitbucket.org/anttijuu/dirwatcher) project. It follows the fan-in style of architecture explained above so that there is one last Node receiving packages from leaf Nodes (no intermediate Nodes in between). DirWatcher does not support remote configuration currently.
+
+```
+LeafNode ---\ 
+             \
+LeafNode ------> LastNode
+             /
+LeafNode ----
+           / 
+LeafNode --
+```
+
+DirWatcher Leaf Nodes (with Leaf Node configuration) observe certain directories on the installed computer. When a change occurs in the directory (file is edited, created, renamed or deleted), the Node will send a JSON package ahead to the next Node, containing information about the file system event. The last Node (with Last Node configuration) then exports the change information into an xml or json file (depending on configuration), and a web page can display the events, as they are happening, to the user(s).
+
+In DirWatcher you can see the architecture in action:
+* The `DDirWatcherDataItem` class is the application specific data extending `DataItem` from ProcessorNode library,
+* In the Leaf Nodes, the `DDirWatcherHandler` does the actual file system monitoring and produces file system change events as data item objects,,to be send ahead,
+* In the Leaf Nodes, the `DDirWatcherOutputHandler` provides the converts the data items to JSON and puts it into the package to be sent ahead to LastNode,
+* In the Last Node, the `DDirWatcherInputHandler` parses app specific payload from incoming JSON package, and finally
+* In the Last Node, the `DDirWatcherMarshallerHandler` marshalls (or exports) the received data items as either XML or JSON, depending on configuration, to be used by a web app showing the file system events to users.
