@@ -47,13 +47,15 @@ Communication between the Nodes happens over UDP protocol, using JSON messages c
 "payload" : "command value" | "payload in json"
 }
 ```
-Each package has a globally unique id, which can be used to track how packages are delivered through the Nodes in an installation.
+Each package has a globally unique id, which can be used to track how packages are delivered through the Nodes in an installation. 
+
+For more detailed documentation of the JSON structures, see [JSONDocs](JSONDocs.md).
 
 ProcessorNode takes care of parsing and creating the "package" id (UUID value) and "type" elements. 
 
 Application specific code must take care of handling the "payload". Application specific playload can be text, but usually it is JSON. 
 
-The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. This enables *remote configuration* of the nodes. All other payload contents must be handled by the application specific code outside of ProcessorNode library.
+The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. This enables *remote configuration* of the nodes. All other payload contents must be handled by the application specific code outside of ProcessorNode library. Again see [JSONDocs](JSONDocs.md) for details on configuration messages.
 
 ### Configuration 
 
@@ -181,3 +183,12 @@ In DirWatcher you can see the architecture in action:
 * In the Leaf Nodes, the `DDirWatcherOutputHandler` provides the converts the data items to JSON and puts it into the package to be sent ahead to LastNode,
 * In the Last Node, the `DDirWatcherInputHandler` parses app specific payload from incoming JSON package, and finally
 * In the Last Node, the `DDirWatcherMarshallerHandler` marshalls (or exports) the received data items as either XML or JSON, depending on configuration, to be used by a web app showing the file system events to users.
+
+## Who do I talk to? ##
+
+Repo is owned and maintained by Antti Juustila (antti.juustila at oulu.fi)
+
+## License ##
+
+(c) Antti Juustila 2014-2020. This software is licensed in [GPL version 2 or later](https://opensource.org/licenses/gpl-2.0.php).
+
