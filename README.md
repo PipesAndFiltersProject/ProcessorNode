@@ -34,7 +34,7 @@ An example of such kind of an arragement would be an environmental observation s
 
 ## Implementation
 
-ProcessorNode has been implemented in standard C++ version 17. Implementation is compiler and OS independent.
+ProcessorNode has been implemented in standard C++ version 17. Implementation is compiler and OS independent. Implementation is inside C++ namespace `OHARBase`.
 
 ### Communication and Packages
 
@@ -47,17 +47,20 @@ Communication between the Nodes happens over UDP protocol, using JSON messages c
 "payload" : "command value" | "payload in json"
 }
 ```
-Each package has a globally unique id, which can be used to track how packages are delivered through the netlwork of Nodes.
+Each package has a globally unique id, which can be used to track how packages are delivered through the Nodes in an installation.
 
-ProcessorNode takes care of parsing and creating the "package" id (UUID value) and "type" elements, applications specific code must take care of handling the "payload". Application specific playload can be text, but usually it is JSON. 
+ProcessorNode takes care of parsing and creating the "package" id (UUID value) and "type" elements. 
 
-The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. Effectively this enables remote configuration of the nodes. All other payload contents must be handled by the application specific code outside of ProcessorNode.
+Application specific code must take care of handling the "payload". Application specific playload can be text, but usually it is JSON. 
+
+The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. This enables *remote configuration* of the nodes. All other payload contents must be handled by the application specific code outside of ProcessorNode library.
 
 ### Configuration 
 
 As implied above, the Nodes can be *configured*. Configuration can be done by sending configuration packages to Nodes, but also (and more simply) using configuration files.
 
-Configuration file for a Node should include at least:
+Configuration file for a Node should include at least these *key-value* pairs, separated by tab character:
+
 * the name of the Node,
 * the input port used by the node for reading incoming packages (optional, can be left out or "null"),
 * the output IP address of the next Node to send packages to, including the port (no host names, just numeric IP addresses),
@@ -71,7 +74,7 @@ If the application wants to use the ProcessorNode remote configuration features,
 
 Additionally, configuration file may include application specific configuration items, as seen in the DirWatcher example app (discussed below).
 
-An example of a configuration file looks like this (elements on a line *must* be tab separated):
+An example of a configuration file looks like this (key-value pairs on a line *must* be tab separated):
 
 ```
 nodeconfiguration
@@ -82,16 +85,16 @@ output      192.168.1.165:50003
 filein      /Users/juustila/StudentPassing/exercise-info.txt
 fileout     /Users/juustila/StudentPassing/some-repornting-data.txt
 ```
-First line of a configuration file must always have the word nodeconfiguration, and nothing else.
+First line of a configuration file must always have the word `nodeconfiguration`, and nothing else.
 
-Then, the file is describing a Node named "Exercise information", having a port listening to config broadcast messages in port 10001, receiving data packages from previous Node from port 50002, sending packages to next Node at 192.168.1.165:50003, readind data from tsv file "exercise-info.txt" and also writing some reporting data to a file.
+Then, the file is describing a Node named "Exercise information", having a port listening to config broadcast messages in port 10001, receiving data packages from previous Node from port 50002, sending packages to next Node at 192.168.1.165:50003, readind data from tsv file "exercise-info.txt" and also writing some reporting data to a file named there.
 
 
 ## Dependencies
 
 ProcessorNode requires the following external components:
 
-| Component | Min version | Purpose |
+| Component | Version        | Purpose |
 | --------------|---------------|-----------|
 | [Boost](https://boost.org)          | 1.70.0+        | Networking (Boost::asio), string algorithms, uuid's |
 | [g3logger](https://github.com/KjellKod/g3log)     | 1.3+             | Logging actions in the library |
@@ -99,8 +102,9 @@ ProcessorNode requires the following external components:
 
 Download the Boost library and make sure the boost headers are available for the building of ProcessorNode library. The usual steps are:
 
-* run the bootstrap.sh / .bat and then
-* run the b2 file. Specify C++17 as the standard to use.
+* run the `bootstrap.sh` / .bat (in Windows) and then
+* run the b2 file. Specify C++17 as the standard to use: `b2 cxxflags="-std=c++17"`
+* `b2 install` installs the headers to a system specific location where ProcessorNode build can find them.
 
 Use `git clone` to retrieve g3logger and nlohmann::json. Both can be build using cmake. See instructions from documentation of these libraries.
 
@@ -146,14 +150,14 @@ Then include the necessary headers from the lib into your app code, use the impl
 
 The basic usage of ProcessorNode includes:
 
-1. Implementing application specific extension(s) of DataItem classes by subclassing DataItem. DataItem is an abstraction of *data* handled by the Nodes.
-2. Implementing application specific *data handlers* by extending the DataHandler class,
-3. Configuring the Node using a *configuration file', including ProcessorNode level configuration items as well as application specific configurations,
-2. Creating a ProcessorNode object,
+1. Implementing application specific extension(s) of `DataItem` classes by subclassing `DataItem`. `DataItem` is an abstraction of *data* handled by the Nodes.
+2. Implementing application specific *data handlers* by extending the `DataHandler` class,
+3. Configuring the Node using a *configuration file*, including configuration items known by ProcessorNode, as well as application specific configurations,
+2. Creating a `ProcessorNode` object,
 3. Calling ProcessorNode's `configure` passing the configuration file as a parameter,
 4. Adding *handlers* implemented in step 2 to handle application specific data items implemented in step 1.
-    * see DataHandler and extensions of it from DirWatcher as examples) 
-5. Calling ProcessorNode.start() to begin processing incoming/outgoing data packages according to application specific implementation.
+    * see `DataHandler` and extensions of it from DirWatcher as examples, 
+5. Calling ProcessorNode's `start()` to begin processing incoming/outgoing data packages according to application specific implementation.
 
 ### Example project
 

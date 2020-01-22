@@ -30,7 +30,7 @@ const std::string KNullString{""};
 /** Constructor for the processor node.
  @param aName The name of the processor node.
  @param obs The observer of the node who gets event and error notifications of activities in the node. */
-ProcessorNode::ProcessorNode(const std::string & aName, ProcessorNodeObserver * obs)
+ProcessorNode::ProcessorNode(ProcessorNodeObserver * obs)
 : config(nullptr), networkReader(nullptr), networkWriter(nullptr), configReader(nullptr), configWriter(nullptr), running(false), nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
    commandHandlerThread(nullptr), hasIncoming(false), observer(obs)
 {
