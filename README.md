@@ -28,7 +28,7 @@ N3 --------> N6 ----/
 N4 --------/
 ```
 
-Here the leaf Nodes N1-4 collect data. N1 and N2 pass it along to N5, which delivers data combining it ahead to N7. Similarily, N3 and N4 deliver their data to N6, which sends it ahead to N7. 
+Here the leaf Nodes N1-4 collect data. N1 and N2 pass it along to N5, which delivers data combining it ahead to N7. Similarily, N3 and N4 deliver their data to N6, which sends it ahead to N7. Obviously the Nodes in between can also collect their own data, aggregate it with incoming data and then send it ahead.
 
 An example of such kind of an arragement would be an environmental observation scenario. Nodes would be deployed in small devices (e.g. Raspberry Pi with Wi-Fi), collecting environmental data (temperature, humidity, air pressure, water level in rivers or lakes, etc.). Data would then be collected from large areas combined and delivered to a central location where data could be used for statistics, visualization or altering humans when environmental conditions exceed some threshold limits.
 
@@ -36,7 +36,7 @@ An example of such kind of an arragement would be an environmental observation s
 
 ProcessorNode has been implemented in standard C++ version 17. Implementation is compiler and OS independent.
 
-Communication between the Nodes happens over UDP protocol, using JSON messages. JSON payload is application specific. Payload must be included in a "package":
+Communication between the Nodes happens over UDP protocol, using JSON messages called *packages*. JSON payload is application specific. Payload must be included in a package:
 
 ```JSON
 { 
@@ -45,16 +45,34 @@ Communication between the Nodes happens over UDP protocol, using JSON messages. 
 "payload" : "command value" | "payload in json"
 }
 ```
-ProcessorNode takes care of parsing and creating the package id (UUID value) and type elements, applications specific code must take care of handling the payload.
+Each package has a globally unique id, which can be used to track how packages are delivered through the netlwork of Nodes.
 
-The only exception is the type:configuration package -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. Effectively this enables remote configuration of the nodes. All other payload contents must be handled by the application specific code outside ProcessorNode.
+ProcessorNode takes care of parsing and creating the package id (UUID value) and type elements, applications specific code must take care of handling the payload. Application specific playload can be whatever text, but usually it is JSON. 
+
+The only exception is the "type":"configuration" packages -- then the payload contains node configuration data, and ProcessorNode takes care of handling configuration request and responses. Effectively this enables remote configuration of the nodes. All other payload contents must be handled by the application specific code outside ProcessorNode.
+
+As implied above, the Nodes can be *configured*. Configuration can be done by sending configuration packages, but also (and more simply) using configuration files.
+
+Configuration file for a Node should include at least:
+* the name of the Node,
+* the input port used by the node for reading incoming packages (optional, can be left out or "null"),
+* the output IP address of the next Node to send packages to, including the port (no host names, just numeric IP addresses),
+* the optional input data file a Node can read to handle data in batches. Data file format is tsv, but the contents is application specific,
+* the optional output data file a Node can write data to. No special formatting requirements exist.
+
+If the application wants to use the ProcessorNode remote configuration features, it additionally should include:
+* A port listening for configuration request messages (UDP broadcast messages) from a remote Configurator app
+    * this port should be the same for all Nodes in the installation, since Configurator app does not have information on which machines Nodes are installed and which and ports Nodes are listening to. So a single port number should be configured for all Nodes
+* If the Node does not have an output to the Next node, which can also be used to send responses to configuration requests, a configuration output should be created.
+
+Additionally, configuration file may include application specific configuration items, as seen in the DirWatcher example app (discussed below).
 
 ## Dependencies
 
 ProcessorNode requires the following external components:
 
 | Component | Min version | Purpose |
-| ------------------------------------------|
+| --------------|---------------|-----------|
 | [Boost](https://boost.org)          | 1.70.0+        | Networking (Boost::asio), string algorithms, uuid's |
 | [g3logger](https://github.com/KjellKod/g3log)     | 1.3+             | Logging actions in the library |
 | [nlohmann::json](https://github.com/nlohmann/json) | 3.2+       | For parsing and creating JSON from/to objects |
