@@ -135,7 +135,7 @@ void NetworkWriter::threadFunc() {
             LOG(INFO) << TAG << "Creating message...";
             boost::shared_ptr<std::string> message(new std::string(currentlySending));
             boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(tmpHost), tmpPort);
-            LOG(INFO) << TAG << "Now sending through socket " << destination.address().to_string() << ":" << destination.port();
+            LOG(INFO) << TAG << "Now sending to address " << destination.address().to_string() << ":" << destination.port();
             socket.async_send_to(boost::asio::buffer(*message), destination,
                                  boost::bind(&NetworkWriter::handleSend, this,
                                              boost::asio::placeholders::error,

@@ -26,11 +26,11 @@
  
  The library needs the following tools and uses the following other external libraries:
  
- -# A C++ compiler supporting C++ 14 and STL.
+ -# A C++ compiler supporting C++ 17 and STL.
  -# cmake for building the library.
- -# boost 1.68.0 or newer. You need to build system library from boost. Build using c++14 (e.g. b2 cxxflags="-std=c++14".). For more information, see boost getting started guide.
+ -# boost 1.70.0 or newer. You need to build system library from boost. Build using c++17 (e.g. b2 cxxflags="-std=c++17".). For more information, see boost getting started guide.
  -# nlohmann::json for parsing and creating JSON.
- -# g3logger for logging events in all components of this software. Also requires C++ v 14.
+ -# g3logger for logging events in all components of this software.
  
  You can build the library like this (in the root dir of the lib):
  
@@ -44,7 +44,9 @@
  
  Then you need to implement another layer on top for applicaton specific functionality and/or an app that utilises the library, communicating with other apps over the net. For an example, see StudentLayer library and BasicInfoGUI node and a sample configuration/installation in the StudentPassing system.
  
- (c) Antti Juustila, 2014-2019.
+ See also README.md (generated with doxygen to Related pages by doxygen).
+ 
+ (c) Antti Juustila, 2014-2020.
  
  */
 
