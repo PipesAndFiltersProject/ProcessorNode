@@ -184,6 +184,16 @@ In DirWatcher you can see the architecture in action:
 * In the Last Node, the `DDirWatcherInputHandler` parses app specific payload from incoming JSON package, and finally
 * In the Last Node, the `DDirWatcherMarshallerHandler` marshalls (or exports) the received data items as either XML or JSON, depending on configuration, to be used by a web app showing the file system events to users.
 
+## Documentation
+
+The project includes a doxyfile, a configuration file for [Doxygen](http://www.doxygen.nl). Using it you can create a more detailed developer documentation of the library. Command
+
+```
+doxygen doxyfile
+```
+...creates a docs subdirectory and generates HTML documentation. You can change the doxyfile to create LaTeX, docbook, man pages or whatever if you prefer something else than HTML.
+
+
 ## Who do I talk to? ##
 
 Repo is owned and maintained by Antti Juustila (antti.juustila at oulu.fi)
