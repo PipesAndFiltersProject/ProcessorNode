@@ -10,6 +10,20 @@ find_package(Boost 1.70.0 REQUIRED COMPONENTS system)
 find_package(g3logger REQUIRED)
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
+# Add a "doc" target to generate API documentation with Doxygen.
+# After "cmake ..", execute "make doc" to create docs. 
+# When using Ninja, do "cmake -GNinja .." and "ninja doc" to create the docs.
+# There will be a docs directory in the build dir, containing the docs.
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+   configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/doxyfile @ONLY)
+   add_custom_target(doc
+      ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMENT "Generating API documentation with Doxygen" VERBATIM
+   )
+endif(DOXYGEN_FOUND)
+
 if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
    add_library(${LIB_NAME} STATIC ConfigurationDataItem.cpp DataItem.cpp Networker.cpp 
        ProcessorNode.cpp ConfigurationFileReader.cpp NodeConfiguration.cpp DataFileReader.cpp
