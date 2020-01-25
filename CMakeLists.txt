@@ -11,6 +11,8 @@ find_package(g3logger REQUIRED)
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
 # Add a "doc" target to generate API documentation with Doxygen.
+# Doxygen is _not_ a component that ProcessorNode uses, but a _tool_ 
+# used in library document generation as part of the build process.
 # After "cmake ..", execute "make doc" to create docs. 
 # When using Ninja, do "cmake -GNinja .." and "ninja doc" to create the docs.
 # There will be a docs directory in the build dir, containing the docs.
