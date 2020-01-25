@@ -186,12 +186,14 @@ In DirWatcher you can see the architecture in action:
 
 ## Documentation
 
-The project includes a doxyfile, a configuration file for [Doxygen](http://www.doxygen.nl). Using it you can create a more detailed developer documentation of the library. Command
+The project includes a `doxyfile.in`, a configuration file for [Doxygen](http://www.doxygen.nl). Using it you can create a more detailed developer documentation of the library. Document generation is integrated to CMake. After running cmake, create the docs:
 
 ```
-doxygen doxyfile
+make doc
 ```
-...creates a docs subdirectory and generates HTML documentation. You can change the doxyfile to create LaTeX, docbook, man pages or whatever if you prefer something else than HTML.
+or, if using Ninja: `ninja doc`. A `docs` subdirectory is created in the build directory. Generated HTML documentation can be found there. You can edit the doxyfile.in to create LaTeX, docbook, RTF, man pages or whatever if you prefer something else than HTML.
+
+Document generation requires that Doxygen is installed. If also GraphViz is installed, generated documentation will include class and dependency diagrams.
 
 
 ## Who do I talk to? ##
