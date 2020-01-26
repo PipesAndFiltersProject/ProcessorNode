@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersFramework__DataItem__
-#define __PipesAndFiltersFramework__DataItem__
+#pragma once
 
 #include <ostream>
 #include <map>
@@ -18,7 +17,7 @@ namespace OHARBase {
 
 /**
  An abstract class, representing the data items the applications can use.
- Application developers should subclass the DataItem class and reimplement
+ Application developers should subclass the DataItem class and implement
  the abstract methods.
  This class implements the Prototype design pattern.
  @author Antti Juustila
@@ -62,4 +61,3 @@ private:
 	
 } //namespace
 
-#endif /* defined(__PipesAndFiltersFramework__DataItem__) */

@@ -71,7 +71,7 @@ Configuration file for a Node should include at least these *key-value* pairs, s
 
 If the application wants to use the ProcessorNode remote configuration features, configuration file should additionally include:
 * A port listening for configuration request messages (UDP broadcast messages) from a remote Configurator app
-    * this port should be the same for all Nodes in the installation, since Configurator app does not have information on which machines Nodes are installed and which and ports Nodes are listening to. So a single port number should be configured for all Nodes
+    * this port should be the same for all Nodes in the installation, since Configurator app does not have information on which machines Nodes are installed and which and ports Nodes are listening to. So a same port number should be configured for all Nodes
 * If the Node does not have an output to the Next node, which can also be used to send responses to configuration requests, a configuration output should be created.
 
 Additionally, configuration file may include application specific configuration items, as seen in the DirWatcher example app (discussed below).
@@ -89,7 +89,15 @@ fileout     /Users/juustila/StudentPassing/some-reporting-data.txt
 ```
 First line of a configuration file must always have the word `nodeconfiguration`, and nothing else.
 
-Then, the file is describing a Node named "Exercise information", having a port listening to config broadcast messages in port 10001, receiving data packages from previous Node from port 50002, sending packages to next Node at 192.168.1.165:50003, readind data from tsv file "exercise-info.txt" and also writing some reporting data to a file named there.
+Then, the sample file is describing a Node:
+* named "Exercise information", 
+* having a port listening to config broadcast messages in port 10001, 
+* receiving data packages from previous Node from port 50002, 
+* sending packages to next Node at 192.168.1.165:50003, 
+* readind data from tsv file "exercise-info.txt" and also 
+* writing some reporting data to a file named.
+
+If no output would be configured and remote configuration support is required, one should specify `config-out` with value "yes". Node would then create a socket just for sending configuration response Packages. No other packages would be sent using this writer. If the Node has `output`, the same socket is used for sending "usual" packages and also configuration responses.
 
 
 ## Dependencies
@@ -177,12 +185,6 @@ LeafNode --
 
 DirWatcher Leaf Nodes (with Leaf Node configuration) observe certain directories on the installed computer. When a change occurs in the directory (file is edited, created, renamed or deleted), the Node will send a JSON package ahead to the next Node, containing information about the file system event. The last Node (with Last Node configuration) then exports the change information into an xml or json file (depending on configuration), and a web page can display the events, as they are happening, to the user(s).
 
-In DirWatcher you can see the architecture in action:
-* The `DDirWatcherDataItem` class is the application specific data extending `DataItem` from ProcessorNode library,
-* In the Leaf Nodes, the `DDirWatcherHandler` does the actual file system monitoring and produces file system change events as data item objects,,to be send ahead,
-* In the Leaf Nodes, the `DDirWatcherOutputHandler` provides the converts the data items to JSON and puts it into the package to be sent ahead to LastNode,
-* In the Last Node, the `DDirWatcherInputHandler` parses app specific payload from incoming JSON package, and finally
-* In the Last Node, the `DDirWatcherMarshallerHandler` marshalls (or exports) the received data items as either XML or JSON, depending on configuration, to be used by a web app showing the file system events to users.
 
 ## Documentation
 

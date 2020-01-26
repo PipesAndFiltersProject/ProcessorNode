@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersFramework__NetworkWriter__
-#define __PipesAndFiltersFramework__NetworkWriter__
+#pragma once
 
 #include <queue>
 #include <condition_variable>
@@ -18,10 +17,11 @@
 namespace OHARBase {
 	
    //TODO: 1..n destination addresses instead of only one.
+   //TODO: Rules for specifying to which output address to send the package to.
 	/** NetworkWriter handles the sending of the data packages to the next node.
 	 It contains a queue of data packages to send. Sending happens in a separate thread
-	 in order to keep the main thread of the processornode responsive to user actions as well
-	 as to enable handling and receiving the data from other node separately.
+	 in order to keep the main thread responsive to user actions as well
+	 as to enable handling and receiving the data from other nodes separately.
 	 @author Antti Juustila
 	 */
 	class NetworkWriter : public Networker {
@@ -53,6 +53,7 @@ namespace OHARBase {
 		/** The condition variable used to signal the sending thread that new data is available
 		 in the queue. */
 		std::condition_variable condition;
+      /** The thread where networking code runs in. */
 		std::thread * threader;
 		/** Logging tag. */
 		static const std::string TAG;

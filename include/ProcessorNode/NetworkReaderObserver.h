@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef PipesAndFiltersFramework_NetworkObserver_h
-#define PipesAndFiltersFramework_NetworkObserver_h
+#pragma once
 
 namespace OHARBase {
 	
@@ -30,5 +29,3 @@ namespace OHARBase {
 	
 } // namespace
 
-
-#endif

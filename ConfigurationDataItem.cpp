@@ -16,8 +16,6 @@
 
 namespace OHARBase {
 
-// TODO: change parsing of config data to JSON, following StudentDataItem example.
-
 ConfigurationDataItem::ConfigurationDataItem(const ConfigurationDataItem & item)
 : itemName(item.itemName), itemValue(item.itemValue)
 {

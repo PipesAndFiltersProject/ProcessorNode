@@ -19,7 +19,7 @@ namespace OHARBase {
 	/**
 	 ConfigurationHandler handles configuration related messages.
 	 @author Antti Juustila
-	 @see DataHandler
+	 @see NodeConfiguration, ConfigurationFileReader, ProcessorNode
 	 */
 	class ConfigurationHandler : public DataHandler {
 	public:

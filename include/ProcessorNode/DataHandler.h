@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersFramework__DataHandler__
-#define __PipesAndFiltersFramework__DataHandler__
+#pragma once
 
 #include <string>
 
@@ -43,6 +42,3 @@ namespace OHARBase {
     
     
 }
-
-
-#endif /* defined(__PipesAndFiltersFramework__DataHandler__) */

@@ -6,8 +6,7 @@
 //  Copyright © 2016 Antti Juustila. All rights reserved.
 //
 
-#ifndef NodeConfiguration_hpp
-#define NodeConfiguration_hpp
+#pragma once
 
 #include <vector>
 
@@ -52,5 +51,3 @@ namespace OHARBase {
 
 
 }
-
-#endif /* NodeConfiguration_hpp */

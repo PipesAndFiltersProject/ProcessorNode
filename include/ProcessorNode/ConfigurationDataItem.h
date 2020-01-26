@@ -6,9 +6,7 @@
 //  Copyright © 2016 Antti Juustila. All rights reserved.
 //
 
-#ifndef ConfigurationDataItem_h
-#define ConfigurationDataItem_h
-
+#pragma once
 
 #include <ProcessorNode/DataItem.h>
 
@@ -61,4 +59,4 @@ void from_json(const nlohmann::json & j, ConfigurationDataItem & configItem);
 
 }
 
-#endif /* ConfigurationDataItem_h */
+// EOF

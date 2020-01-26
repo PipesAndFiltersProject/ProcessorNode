@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef PipesAndFiltersFramework_Networker_h
-#define PipesAndFiltersFramework_Networker_h
+#pragma once
 
 #include <string>
 #include <thread>
@@ -100,4 +99,4 @@ namespace OHARBase {
 	
 	
 } //namespace
-#endif
+

@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef PipesAndFiltersFramework_ProcessorNode_h
-#define PipesAndFiltersFramework_ProcessorNode_h
+#pragma once
 
 #include <string>
 #include <vector>
@@ -51,12 +50,12 @@
  */
 
 
-/** @brief Namespace contains basic classes for
+/** @brief Namespace OHARBase contains basic classes for
  building distributed applications based on the Pipes & Filters
  architectural style.<p>
  OHARBase namespace contains the basic classes for
  building distributed applications based on the Pipes & Filters
- architectural style. In this implementation of this style,
+ architectural style.<p>In this implementation of this style,
  Filters (a.k.a. Nodes, ProcessorNodes) receive data from
  the network using datagrams, process the data (including reading
  data from a file) and send the processed data to the next Node,
@@ -103,7 +102,9 @@ namespace OHARBase {
     ProcessorNode itself manages only the setting of a specific node; which object it contains. The actual
     work is done by the networking objects and the handlers. Thus it is quite simple to set up a filter.
     Just create the reader and/or writer, and create the necessary handler objects and add them into the
-    ProcessorNode, and start running the processor.
+    ProcessorNode, and start running the processor.<p>
+    Nodes can be configured by using a configuration file or remotely by sending configuration messages to the Node in JSON
+    format.
     @author Antti Juustila
     */
    class ProcessorNode final : public NetworkReaderObserver {
@@ -238,4 +239,4 @@ namespace OHARBase {
    
    
 } //namespace
-#endif
+

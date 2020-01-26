@@ -6,8 +6,7 @@
 //  Copyright (c) 2014 Antti Juustila. All rights reserved.
 //
 
-#ifndef PipesAndFiltersFramework_DataReaderObserver_h
-#define PipesAndFiltersFramework_DataReaderObserver_h
+#pragma once
 
 namespace OHARBase {
    
@@ -29,4 +28,3 @@ namespace OHARBase {
    
    
 } //namespace
-#endif

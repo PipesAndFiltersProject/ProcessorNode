@@ -28,12 +28,11 @@ namespace OHARBase {
    const std::string NetworkReader::TAG{"NetReader "};
    
    /**
-    Constructor to create the reader with host name. See the
-    constructor of Networker class about handling the parameters.
-    @param hostName the host to reading data, including port number. In practise,
-    this should always be local host for reader, i.e. 127.0.0.1 with port, eg. 127:0.0.1:2222.
+    Constructor to create the reader with a port to listen to.
+    @param port the port for reading data.
     @param obs The observer who gets notified of network events.
-    @param io_s The boost asio io service.
+    @param io_s The Boost asynchronous io service.
+    @param reuseAddress Whether to reuse the port number, allowing several sockets to read from the same port. Used only in broadcast messaging in handling configuration query messages when Nodes are running on a same host.
     */
    NetworkReader::NetworkReader(int port,
                               NetworkReaderObserver & obs,
@@ -48,8 +47,7 @@ namespace OHARBase {
    
    
    
-   /** Starts the reader. If necessary, connects to the endpoint and then does
-    asynchronous read. */
+   /** Starts the reader. Open the socket for reading data from the specified port. */
    void NetworkReader::start() {
       LOG(INFO) << TAG << "Start reading for data from port: " << port;
       running = true;
@@ -69,7 +67,7 @@ namespace OHARBase {
    }
 
    /**
-         Reads data from the opened socket asyncronously.
+   Reads data from the opened socket asyncronously.
     */
    void NetworkReader::readSocket() {
       socket.async_receive_from(boost::asio::buffer(*buffer),
@@ -133,10 +131,10 @@ namespace OHARBase {
       }
    }
    
-   /** Allows another object to read the package object received from the network.
+   /** Read the package object from the queue, received from the network.
     This method should be called by the NetworkReaderObserver only when it has been notified
     that data has arrived.
-    @return The Package containing the data received from the previous ProcessorNode.
+    @return The Package containing the data received from the previous ProcessorNode. If queue was empty returns an empty package.
     */
    Package NetworkReader::read() {
       LOG(INFO) << TAG << "Reading results from reader";

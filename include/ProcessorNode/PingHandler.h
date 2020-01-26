@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersNode__PingHandler__
-#define __PipesAndFiltersNode__PingHandler__
+#pragma once
 
 
 #include <ProcessorNode/DataHandler.h>
@@ -39,5 +38,3 @@ namespace OHARBase {
 	
 	
 }
-
-#endif /* defined(__PipesAndFiltersNode__PingHandler__) */

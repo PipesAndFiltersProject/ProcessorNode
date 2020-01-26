@@ -6,8 +6,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersFramework__NetworkReader__
-#define __PipesAndFiltersFramework__NetworkReader__
+#pragma once
 
 #include <sys/socket.h>
 
@@ -54,7 +53,7 @@ namespace OHARBase {
       /** The address of the sender whose packages we are handling. */
       boost::asio::ip::udp::endpoint remote_endpoint;
       
-      /** Reuse the address (port); needed for listening broadcast messages if several nodes run on the same machine. */
+      /** Reuse the address (port): needed for listening broadcast messages if several nodes run on the same machine. */
       bool doReuseAddress;
       
 		/** Tag for logging. */
@@ -65,4 +64,3 @@ namespace OHARBase {
 	
 } //namespace
 
-#endif /* defined(__PipesAndFiltersFramework__NetworkReader__) */

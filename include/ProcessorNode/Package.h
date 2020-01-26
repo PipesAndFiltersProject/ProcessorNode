@@ -5,8 +5,7 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#ifndef __PipesAndFiltersNode__Package__
-#define __PipesAndFiltersNode__Package__
+#pragma once
 
 #include <string>
 #include <variant>
@@ -127,4 +126,3 @@ namespace OHARBase {
    
    
 } //namespace
-#endif /* defined(__PipesAndFiltersNode__Package__) */

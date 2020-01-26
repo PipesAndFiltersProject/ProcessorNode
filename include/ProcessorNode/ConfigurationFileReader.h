@@ -6,8 +6,7 @@
 //  Copyright © 2016 Antti Juustila. All rights reserved.
 //
 
-#ifndef ConfigurationFileReader_h
-#define ConfigurationFileReader_h
+#pragma once
 
 #include <string>
 
@@ -19,22 +18,11 @@ namespace OHARBase {
 	class DataReaderObserver;
 	
 	/**
-	 Class reads Node configuration data from a file. The file name is usually provided
-	 as the startup parameters of the app which instantiates the ProcessorNode. App then
-     instantiates the Node and calls configure() function.<p>
-     File has the following contents. Note that the key-value pairs are tab separated:<br />
-	 <pre>
-	 nodeconfiguration
-     input	127.0.0.1:1234
-	 output	130.231.96.123:1234
-	 filein	inputfile.txt
-	 fileout	outputfile.txt
-	 </pre>
-	 First line must contain the word "nodeconfiguration" to identify the content type of the file.
-	 Second, the  <i>input</i> line specifies the port number of the incoming data. Next, <i>output</i>
-	 line specifies the address the Node sends data to, including the host IP address and port number.
-	 The two files specify the possible input and output files Node uses. If any of these do not
-	 exist, the value for the configuration item should be "null" or omit the item/line alltogether from the config file.
+   Class reads Node configuration data from a file. The file name is usually provided
+   as the startup parameters of the app which instantiates the ProcessorNode. App then
+   instantiates the Node and calls configure() function.<p>
+   See project documentation on the structure and detailed contents of the configuration file. <br />
+   First line in config file must contain only the word "nodeconfiguration" to identify the content type of the file.
 	 */
 	class ConfigurationFileReader : public DataFileReader {
 	public:
@@ -49,4 +37,3 @@ namespace OHARBase {
 	
 	
 } //namespace
-#endif /* ConfigurationFileReader_h */
