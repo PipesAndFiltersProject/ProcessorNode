@@ -63,16 +63,17 @@ As implied above, the Nodes can be *configured*. Configuration can be done by se
 
 Configuration file for a Node should include at least these *key-value* pairs, separated by tab character:
 
-* the name of the Node,
-* the input port used by the node for reading incoming packages (optional, can be left out or "null"),
-* the output IP address of the next Node to send packages to, including the port (no host names, just numeric IP addresses),
-* the optional input data file a Node can read to handle data in batches. Data file format is tsv, but the contents is application specific,
-* the optional output data file a Node can write data to. No special formatting requirements exist.
+* `name` -- the name of the Node,
+* `input` -- the input port used by the node for reading incoming packages (optional, can be left out or "null"),
+* `output` -- the output IP address of the next Node to send packages to, including the port (no host names, just numeric IP addresses),
+* `filein` -- the optional input data file a Node can read to handle data in batches. Data file format is tsv, but the contents is application specific,
+* `fileout` -- the optional output data file a Node can write data to. No special formatting requirements exist.
 
 If the application wants to use the ProcessorNode remote configuration features, configuration file should additionally include:
-* A port listening for configuration request messages (UDP broadcast messages) from a remote Configurator app
-    * this port should be the same for all Nodes in the installation, since Configurator app does not have information on which machines Nodes are installed and which and ports Nodes are listening to. So a same port number should be configured for all Nodes
-* If the Node does not have an output to the Next node, which can also be used to send responses to configuration requests, a configuration output should be created.
+
+* `config-in` -- A port listening for configuration read request messages (UDP broadcast messages) from a remote Configurator app
+    * this port should be the same for all Nodes in the installation, since Configurator app does not have information on which machines Nodes are installed and which and ports Nodes are listening to. So a same port number should be configured for all Nodes.
+* `config-out` with value "yes" -- if the Node does not have an output to the Next node, which can also be used to send responses to configuration requests, a configuration output should be created.
 
 Additionally, configuration file may include application specific configuration items, as seen in the DirWatcher example app (discussed below).
 
@@ -97,7 +98,7 @@ Then, the sample file is describing a Node:
 * readind data from tsv file "exercise-info.txt" and also 
 * writing some reporting data to a file named.
 
-If no output would be configured and remote configuration support is required, one should specify `config-out` with value "yes". Node would then create a socket just for sending configuration response Packages. No other packages would be sent using this writer. If the Node has `output`, the same socket is used for sending "usual" packages and also configuration responses.
+If no output is configured and remote configuration support is required, one should specify `config-out` with value "yes". No other packages would be sent using this writer. If the Node has `output`, the same socket is used for sending "usual" packages and also configuration responses.
 
 
 ## Dependencies
@@ -128,7 +129,7 @@ int main(int argc, const char * argv[])
   g3::initializeLogging(logworker.get());
 
   if (argc < 2) {
-    LOG(WARNING) << "DDirWatcher" << "No config file specified! Give config file name as startup parameter.";
+    LOG(WARNING) << "DDirWatcher " << "No config file specified! Give config file name as startup parameter.";
 // ...
 ```
 ## Building
@@ -158,18 +159,16 @@ Then include the necessary headers from the lib into your app code, use the impl
 
 ## Usage and example app
 
-The basic usage of ProcessorNode includes:
+The basic usage of ProcessorNode is as follows:
 
 1. Implementing application specific extension(s) of `DataItem` classes by subclassing `DataItem`. `DataItem` is an abstraction of *data* handled by the Nodes.
 2. Implementing application specific *data handlers* by extending the `DataHandler` class,
 3. Configuring the Node using a *configuration file*, including configuration items known by ProcessorNode, as well as application specific configurations,
-2. Creating a `ProcessorNode` object,
+2. Creating a `ProcessorNode` object instance,
 3. Calling ProcessorNode's `configure` passing the configuration file as a parameter,
 4. Adding *handlers* implemented in step 2 to handle application specific data items implemented in step 1.
     * see `DataHandler` and extensions of it from DirWatcher as examples, 
 5. Calling ProcessorNode's `start()` to begin processing incoming/outgoing data packages according to application specific implementation.
-
-### Example project
 
 An example app build on top of ProcessorNode can be found in the [DirWatcher](https://bitbucket.org/anttijuu/dirwatcher) project. It follows the fan-in style of architecture explained above so that there is one last Node receiving packages from leaf Nodes (no intermediate Nodes in between). DirWatcher does not support remote configuration currently.
 
@@ -186,7 +185,7 @@ LeafNode --
 DirWatcher Leaf Nodes (with Leaf Node configuration) observe certain directories on the installed computer. When a change occurs in the directory (file is edited, created, renamed or deleted), the Node will send a JSON package ahead to the next Node, containing information about the file system event. The last Node (with Last Node configuration) then exports the change information into an xml or json file (depending on configuration), and a web page can display the events, as they are happening, to the user(s).
 
 
-## Documentation
+## Developer documentation
 
 The project includes a `doxyfile.in`, a configuration file for [Doxygen](http://www.doxygen.nl). Using it you can create a more detailed developer documentation of the library. Document generation is integrated to CMake. After running cmake, create the docs:
 
