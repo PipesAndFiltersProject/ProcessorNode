@@ -139,12 +139,13 @@ Example of a Node configuration payload contents:
 Where
 
 - name is the node's name visible to end users,
-- input is the input UDP port the Node listens to for incoming Packanges,
+- input is the input UDP port the Node listens to for incoming Packages,
+- config-in is the port where Node is listening for configuration read request broadcast messages.
 - output is the IP address of the Next node where packages are sent from this Node,
 - filein is the input file Node is reading data from,
 - fileout is the output file Node is writing data to.
 
-Additional application specific configuration items are listed in the items array.
+Additional application specific configuration items are listed in the items array if they have been set.
 
 
 ## Who do I talk to?
