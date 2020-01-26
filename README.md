@@ -85,7 +85,7 @@ config-in   10001
 input       50002
 output      192.168.1.165:50003
 filein      /Users/juustila/StudentPassing/exercise-info.txt
-fileout     /Users/juustila/StudentPassing/some-repornting-data.txt
+fileout     /Users/juustila/StudentPassing/some-reporting-data.txt
 ```
 First line of a configuration file must always have the word `nodeconfiguration`, and nothing else.
 
@@ -196,11 +196,11 @@ or, if using Ninja: `ninja doc`. A `docs` subdirectory is created in the build d
 Document generation requires that Doxygen is installed. If also GraphViz is installed, generated documentation will include class and dependency diagrams.
 
 
-## Who do I talk to? ##
+## Who do I talk to?
 
 Repo is owned and maintained by Antti Juustila (antti.juustila at oulu.fi)
 
-## License ##
+## License
 
 (c) Antti Juustila 2014-2020. This software is licensed in [GPL version 2 or later](https://opensource.org/licenses/gpl-2.0.php).
 
