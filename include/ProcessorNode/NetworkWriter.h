@@ -62,5 +62,3 @@ namespace OHARBase {
 	
 }
 
-
-#endif /* defined(__PipesAndFiltersFramework__NetworkWriter__) */
