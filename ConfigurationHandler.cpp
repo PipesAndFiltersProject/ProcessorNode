@@ -16,14 +16,12 @@
 namespace OHARBase {
 
 const std::string ConfigurationHandler::TAG{"ConfigHandler "};
-
+/** Configuration operation "read", for querying Node configuration. */
 static const std::string ConfigReadOperation{"read"};
+/** Configuration operation "info", the response containing information about Node configuration. */
 static const std::string ConfigInfoOperation{"info"};
+/** Configuration operation "set", sent to Node to change the configuration. */
 static const std::string ConfigSetOperation{"set"};
-
-//TODO: configurator has own socket with reuse_address it uses to listen to broadcasts.
-// Perhaps then multiple nodes can be run on same machine. All receive the same package anyways.
-// Reconfigure messages are sent to node's "own" incoming reader per node.
 
 /**
  Constructs a ConfigurationHandler object. Configuration handler must now about the ProcessorNode

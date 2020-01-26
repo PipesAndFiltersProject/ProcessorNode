@@ -228,6 +228,11 @@ namespace OHARBase {
       return destinationAddress.length() > 0;
    }
 
+   /**
+    Assignment operator for Package.
+    @param p The package to copy.
+    @return The package with assigned new values.
+    */
    const Package & Package::operator = (const Package & p) {
       if (this != &p) {
          uid = p.uid;
@@ -239,6 +244,10 @@ namespace OHARBase {
       return *this;
    }
    
+   /**
+    Sets the value for the payload, depending on the type of the parameter.
+    @param x The payload to set.
+    */
    void Package::setPayloadVariant(const std::variant<std::string,std::unique_ptr<DataItem>> & x) {
       auto item = std::get_if<std::unique_ptr<DataItem>>(&x);
       if (item) {
@@ -249,6 +258,11 @@ namespace OHARBase {
 
    }
    
+   /**
+    Move assignment operator for Package, moving values from the parameter to this object..
+    @param p The package to move.
+    @return The package with assigned new values.
+    */
    const Package & Package::operator = (Package && p) {
       if (this != &p) {
          uid = std::move(p.uid);
@@ -260,7 +274,11 @@ namespace OHARBase {
       return *this;
    }
    
-   
+   /**
+    Equals operator, compares the package uuid's to see if they are the same package.
+    @param pkg The package to compare to.
+    @return Returns true if packages have the same uuid.
+    */
    bool Package::operator == (const Package & pkg) const {
       return (uid == pkg.uid);
    }

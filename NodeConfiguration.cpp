@@ -57,10 +57,20 @@ void NodeConfiguration::addOrReplace(const ConfigurationDataItem & item) {
    LOG(INFO) << "Has config: " << item.getItemName() << " " << item.getItemValue();
 }
 
+/**
+ Exports a configuration object as JSON.
+ @param j JSON containing configuration.
+ @param config The configuration to export.
+ */
 void to_json(nlohmann::json & j, const NodeConfiguration & config) {
    j["configitems"] = config.configItems;
 }
 
+/**
+ Imports, from JSON, a configuration.
+ @param j JSON containing the configuration.
+ @param config The configuration from the JSON.
+ */
 void from_json(const nlohmann::json & j, NodeConfiguration & config) {
    if (j.find("configitems") != j.end()) {
       auto items = j["configitems"];

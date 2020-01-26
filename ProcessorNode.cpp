@@ -25,10 +25,10 @@
 namespace OHARBase {
 
 const std::string ProcessorNode::TAG{"PNode "};
+/** Empty string, used when reference to string must be returned but no value is stored: return this one in those cases. */
 const std::string KNullString{""};
 
 /** Constructor for the processor node.
- @param aName The name of the processor node.
  @param obs The observer of the node who gets event and error notifications of activities in the node. */
 ProcessorNode::ProcessorNode(ProcessorNodeObserver * obs)
 : config(nullptr), networkReader(nullptr), networkWriter(nullptr), configReader(nullptr), configWriter(nullptr), running(false), nodeInitiatedShutdownStarted(false), incomingHandlerThread(nullptr), ioServiceThread(nullptr),
@@ -128,6 +128,12 @@ bool ProcessorNode::configure(const std::string & configFile) {
    return success;
 }
 
+/**
+ Gets a value for a configuration name.
+ @param itemName Configuration name, for which a value is requested.
+ @return The value for the configuration item.
+ @throws If there is no configuration, throws a runtime error exception.
+ */
 std::string ProcessorNode::getConfigItemValue(const std::string & itemName) const {
    if (!config) {
       throw std::runtime_error("No configuration.");
@@ -137,7 +143,7 @@ std::string ProcessorNode::getConfigItemValue(const std::string & itemName) cons
 
 /** Sets the address of the input source for the Node. This is the port where
  data is read. Node listens for arrivind data from this port and then handles it using the DataHandler objects.
- @param hostName The host name, e.g. "1234". */
+ @param port The port number to listen to, e.g. "1234". */
 void ProcessorNode::setInputSource(const std::string & port) {
    if (networkReader) {
       delete networkReader;
@@ -157,7 +163,7 @@ void ProcessorNode::setInputSource(const std::string & port) {
 /** Sets the address of the configuration source for the Node. This is the port where
  config data is read. Node listens for arrivind configuration messages from this port
  and then handles it using the ConfigurationHandler object.
- @param hostName The host name, e.g. "1234". */
+ @param port The host name, e.g. "1234". */
 void ProcessorNode::setConfigurationInputSource(const std::string & port) {
    if (configReader) {
       delete configReader;

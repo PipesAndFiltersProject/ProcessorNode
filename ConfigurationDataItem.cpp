@@ -16,6 +16,10 @@
 
 namespace OHARBase {
 
+/**
+ Copy constructor for config item.
+ @param item The item to get values from.
+ */
 ConfigurationDataItem::ConfigurationDataItem(const ConfigurationDataItem & item)
 : itemName(item.itemName), itemValue(item.itemValue)
 {
@@ -26,6 +30,7 @@ const std::string ConfigurationDataItem::TAG{"ConfigReader"};
 const std::string ConfigurationDataItem::CONF_INPUTADDR{"input"};
 /** Configuration data item name for ProcessorNode configuration address (port). */
 const std::string ConfigurationDataItem::CONF_CONFINADDR{"config-in"};
+/** Configuration data item name for ProcessorNode configuration outgoing address (value is yes or no or is missing). */
 const std::string ConfigurationDataItem::CONF_CONFOUTADDR{"config-out"};
 /** Configuration data item name for ProcessorNode outgoing address. */
 const std::string ConfigurationDataItem::CONF_OUTPUTADDR{"output"};
@@ -68,7 +73,11 @@ const std::string & ConfigurationDataItem::getItemValue() const {
    return itemValue;
 }
 
-
+/**
+ Sets the value of the config item from another's value.
+ @param item The item to get the value from.
+ @return Reference to this configuration item.
+ */
 ConfigurationDataItem & ConfigurationDataItem::operator = (const ConfigurationDataItem & item) {
    if (this != &item) {
       itemValue = item.itemValue;
@@ -76,6 +85,10 @@ ConfigurationDataItem & ConfigurationDataItem::operator = (const ConfigurationDa
    return *this;
 }
 
+/** Equals operator, returns true if item names match.
+ @param item Item to compare to.
+ @return Returns true if item names match.
+ */
 bool ConfigurationDataItem::operator == (const ConfigurationDataItem & item) const {
    return itemName == item.itemName;
 }
@@ -123,10 +136,20 @@ std::unique_ptr<DataItem> ConfigurationDataItem::clone() const {
    return std::make_unique<ConfigurationDataItem>(*this);
 }
 
+/**
+ Exports a configuration data item object as JSON.
+ @param j JSON containing configuration data item.
+ @param configItem The configuration data item to export.
+ */
 void to_json(nlohmann::json & j, const ConfigurationDataItem & configItem) {
    j = nlohmann::json{{configItem.getItemName(), configItem.getItemValue()}};
 }
 
+/**
+ Imports, from JSON, a configuration data object.
+ @param j JSON containing the configuration key-value pair.
+ @param configItem The configuration data item from the JSON.
+ */
 void from_json(const nlohmann::json & j, ConfigurationDataItem & configItem) {
    if (j.is_object()) {
       std::pair<std::string, std::string> keyvalue(j);
