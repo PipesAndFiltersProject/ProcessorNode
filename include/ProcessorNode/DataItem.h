@@ -11,6 +11,7 @@
 #include <ostream>
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace OHARBase {
 
