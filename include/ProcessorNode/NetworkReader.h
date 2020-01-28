@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <sys/socket.h>
-
 #include <ProcessorNode/Networker.h>
 
 namespace OHARBase {

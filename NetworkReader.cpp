@@ -6,12 +6,6 @@
 //  Copyright (c) 2013 Antti Juustila. All rights reserved.
 //
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <assert.h>
-
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
