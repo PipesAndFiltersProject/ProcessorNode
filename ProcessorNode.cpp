@@ -589,7 +589,7 @@ void ProcessorNode::passToNextHandlers(const DataHandler * current, Package & pa
       iter++;
       // If there are more handlers, let them consume the package.
       if (iter != handlers.end()) {
-         std::all_of(iter, std::end(handlers), [&](DataHandler * handler) {
+         [[maybe_unused]] bool result = std::all_of(iter, std::end(handlers), [&](DataHandler * handler) {
             if (handler->consume(package)) {
                return false;  // Stop if the handler thinks it should not be handled by rest of the handlers.
             }
