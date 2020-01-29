@@ -47,6 +47,7 @@ if (WIN32)
 
     get_WIN32_WINNT(ver)
     add_definitions(-D_WIN32_WINNT=${ver})
+    add_definitions(-DBOOST_UUID_RANDOM_PROVIDER_FORCE_WINCRYPT)
 endif(WIN32)
 
 if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
