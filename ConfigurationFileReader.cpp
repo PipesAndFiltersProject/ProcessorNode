@@ -19,7 +19,8 @@ namespace OHARBase {
    // TODO: change configuration file format to JSON.
 
 	const std::string ConfigurationFileReader::TAG{"ConfigReader "};
-	
+   const char configFileCommentChar('#');
+
    /**
     Constructor for configuration file reader.
     @param obs The observer who gets notifications of content read from the configuration file.
@@ -34,10 +35,11 @@ namespace OHARBase {
     @param str An item from the configuration file.
     @param contentType The type of the content in this item.
     @returns The configuration data item read from the line. Null if failed to parse the configuration item.
+    @todo Allow comment lines in config files, starting with "#". Just ignore those lines by returning nullptr.
     */
 	std::unique_ptr<DataItem> OHARBase::ConfigurationFileReader::parse(const std::string & str, const std::string & contentType) {
 		std::unique_ptr<DataItem> item(nullptr);
-		if (str.length() > 0) {
+		if (str.length() > 0 && str[0] != configFileCommentChar) {
          item = std::make_unique<ConfigurationDataItem>();
          if (!item->parse(str, contentType)) {
             LOG(WARNING) << TAG << "Configuration failed to parse!";
