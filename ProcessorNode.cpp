@@ -636,7 +636,7 @@ void ProcessorNode::threadFunc() {
          condition.wait(ulock, [this] { return this->hasIncoming || !running; });
       }
       // OK, something happened so if we are still running, check if something came from the network.
-      if (running) {
+      if (running && hasIncoming) {
          if (configReader) {
             handlePackagesFrom(*configReader);
          }
