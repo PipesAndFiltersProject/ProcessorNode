@@ -360,7 +360,7 @@ void ProcessorNode::start() {
          LOG(INFO) << TAG << "Start the output writer";
          networkWriter->start();
       }
-      if (networkReader) {
+      if (networkReader || configReader) {
          LOG(INFO) << TAG << "Start the network receive handler thread...";
          incomingHandlerThread = new std::thread(&ProcessorNode::threadFunc, this);
       }
