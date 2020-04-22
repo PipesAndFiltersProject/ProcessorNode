@@ -32,6 +32,7 @@ public:
    static const std::string CONF_INPUTFILE;
    static const std::string CONF_OUTPUTFILE;
    static const std::string CONF_NODENAME;
+   static const std::string CONF_ENCRYPT;
    
    void setItemName(const std::string &item);
    void setItemValue(const std::string &value);

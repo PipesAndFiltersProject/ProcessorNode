@@ -113,6 +113,10 @@ bool ProcessorNode::configure(const std::string & configFile) {
             setDataFileName(cvalue);
             cvalue = config->getValue(ConfigurationDataItem::CONF_OUTPUTFILE);
             setOutputFileName(cvalue);
+            cvalue = config->getValue(ConfigurationDataItem::CONF_ENCRYPT);
+            std::stringstream sstream;
+            sstream << "Encrypting payload with method: " << (cvalue.length() > 0 ? cvalue : "none");
+            showUIMessage(sstream.str());
             showUIMessage("------ > Configured");
             success = true;
          } else {
@@ -571,33 +575,7 @@ void ProcessorNode::sendData(const Package & data) {
    }
 }
 
-/** Some handlers in Node need to pass packages they handled to the <strong>next</strong>
- handlers in the list of handlers. This includes handlers that read items from a file,
- and the data items read need to be forwarded to the next handlers.<p>
- The implicit assumption is that previous handlers do not do anything relevant to the content
- read by the handler in question, but the next ones do. See documentation of the handlers member
- variable for details.
- @param current The current handler, after which come the handlers that are offered this package.
- @param package The Package to offer to the following Handlers.
- */
-void ProcessorNode::passToNextHandlers(const DataHandler * current, Package & package) {
-   bool found = false;
-   // Find the current handler from the container.
-   auto iter = std::find(std::begin(handlers), std::end(handlers), current);
-   // if it was found, advance to the next handler.
-   if (iter != handlers.end()) {
-      iter++;
-      // If there are more handlers, let them consume the package.
-      if (iter != handlers.end()) {
-         [[maybe_unused]] bool result = std::all_of(iter, std::end(handlers), [&](DataHandler * handler) {
-            if (handler->consume(package)) {
-               return false;  // Stop if the handler thinks it should not be handled by rest of the handlers.
-            }
-            return true; // Continue passing the Package to the next handler.
-         });
-      }
-   }
-}
+
 
 /**
  Node's thread function runs in a loop and waits for incoming data packages from the
@@ -689,17 +667,59 @@ void ProcessorNode::handlePackagesFrom(NetworkReader & reader) {
 void ProcessorNode::passToHandlers(Package & package) {
    LOG(INFO) << TAG << "Passing a package to handlers, count: " << handlers.size();
    try {
+      bool packageHeld = false;
       for (DataHandler * handler : handlers) {
          LOG(INFO) << TAG << "Offering data to next Handler...";
-         if (handler->consume(package)) {
+         packageHeld = handler->consume(package);
+         if (packageHeld) {
             LOG(INFO) << TAG << "Handler returned true, not offering forward anymore";
             break;
          }
+      }
+      if (!packageHeld) {
+         LOG(INFO) << "Sending package.";
+         sendData(package);
+      } else {
+         LOG(INFO) << "Not sending a package since one of the handlers kept it.";
       }
    } catch (const std::exception & e) {
       std::stringstream sstream;
       sstream << "ERROR Something went wrong in handling a package: " << e.what() << " with id " << boost::uuids::to_string(package.getUuid());
       logAndShowUIMessage(sstream.str(), ProcessorNodeObserver::EventType::ErrorEvent);
+   }
+}
+
+/** Some handlers in Node need to pass packages they handled to the <strong>next</strong>
+ handlers in the list of handlers. This includes handlers that read items from a file,
+ and the data items read need to be forwarded to the next handlers.<p>
+ The implicit assumption is that previous handlers do not do anything relevant to the content
+ read by the handler in question, but the next ones do. See documentation of the handlers member
+ variable for details.
+ @param current The current handler, after which come the handlers that are offered this package.
+ @param package The Package to offer to the following Handlers.
+ */
+void ProcessorNode::passToNextHandlers(const DataHandler * current, Package & package) {
+   bool found = false;
+   // Find the current handler from the container.
+   auto iter = std::find(std::begin(handlers), std::end(handlers), current);
+   // if it was found, advance to the next handler.
+   if (iter != handlers.end()) {
+      iter++;
+      // If there are more handlers, let them consume the package.
+      if (iter != handlers.end()) {
+         bool result = std::all_of(iter, std::end(handlers), [&](DataHandler * handler) {
+            if (handler->consume(package)) {
+               return false;  // Stop if the handler thinks it should not be handled by rest of the handlers.
+            }
+            return true; // Continue passing the Package to the next handler.
+         });
+         if (result) {
+            LOG(INFO) << "Sending package.";
+            sendData(package);
+         } else {
+            LOG(INFO) << "Not sending a package since one of the handlers kept it.";
+         }
+      }
    }
 }
 

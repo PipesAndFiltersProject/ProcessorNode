@@ -40,7 +40,8 @@ const std::string ConfigurationDataItem::CONF_INPUTFILE{"filein"};
 const std::string ConfigurationDataItem::CONF_OUTPUTFILE{"fileout"};
 /** Configuration data item name for ProcessorNode's name. */
 const std::string ConfigurationDataItem::CONF_NODENAME{"name"};
-
+/** Configuration data item name for using encryption and the method of it.*/
+const std::string ConfigurationDataItem::CONF_ENCRYPT{"encrypt"};
 /**
  Sets the configuration data item name.
  @param item The configuration item name.
