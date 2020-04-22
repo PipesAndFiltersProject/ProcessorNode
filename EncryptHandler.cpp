@@ -18,7 +18,7 @@ const std::string EncryptHandler::TAG{"EncryptHandler "};
 
 /**
  Constructs a EncryptHandler object.
- @param myNode The processor node to use to forward the ping message.
+ @param mode The mode of the encrypter, is it to encrypt or decrypt the payload.
  */
 EncryptHandler::EncryptHandler(EncryptHandler::Mode mode)
 : encryptionMode(mode)
@@ -26,12 +26,12 @@ EncryptHandler::EncryptHandler(EncryptHandler::Mode mode)
 }
 
 EncryptHandler::~EncryptHandler() {
-   
+   // Empty
 }
 
 /**
- Implementation of encrpytion and decryption of the message using rot13.
- @param data Handler checks if the data contains a data message and if yes, handles it.
+ Implementation of encryption and decryption of the message using rot13.
+ @param package Handler checks if the data contains a data message and if yes, handles it.
  @return Returns false to let other handlers consume the package.
  */
 bool EncryptHandler::consume(OHARBase::Package & package) {
