@@ -71,9 +71,9 @@ Configuration file for a Node should include at least these *key-value* pairs, s
 
 Optional configuration items include encryption:
 
-* `encrypt` -- With the value `rot13` supported currently. When this configuration value is in the config file, Node will encrypt the payload of the JSON package using [rot13](https://en.wikipedia.org/wiki/ROT13) before sending the JSON to the next node. Incoming JSON payload will be also decrypted using rot13.
+* `encrypt` -- With the value `rot13` supported currently. When this configuration value is in the config file, Node will encrypt the payload of the JSON package if the type of the package is `data`, using [rot13](https://en.wikipedia.org/wiki/ROT13) before sending the JSON to the next node. Incoming JSON payload will be also decrypted using rot13.
 
-If using encryption, obviously all the nodes in the same Pipes & Filters installation **must** use the same encryption setting. Note that only the payload of the JSON is encrypted, other parts of the JSON message are *not* encrypted. See [JSONDocs](JSONDocs.md) for details on JSON messages.
+If using encryption, obviously all the nodes in the same Pipes & Filters installation **must** use the same encryption setting. Note that only the payload of the JSON packages of type `data` is encrypted, other parts of the JSON message are *not* encrypted. Nor the payload of the `control` or `configuration` messages See [JSONDocs](JSONDocs.md) for details on JSON messages and their types.
 
 If the application wants to use the ProcessorNode remote configuration features, configuration file should additionally include:
 
