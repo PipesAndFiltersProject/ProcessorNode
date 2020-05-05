@@ -200,7 +200,18 @@ make doc
 ```
 or, if using Ninja: `ninja doc`. A `docs` subdirectory is created in the build directory. Generated HTML documentation can be found there. You can edit the doxyfile.in to create LaTeX, docbook, RTF, man pages or whatever if you prefer something else than HTML.
 
-Document generation requires that Doxygen is installed. If also GraphViz is installed, generated documentation will include class and dependency diagrams.
+Document generation requires that Doxygen is installed. If also GraphViz is installed, generated documentation includes class and dependency diagrams.
+
+To create component diagrams with graphviz and cmake do this (using Ninja as build system):
+
+```
+cmake -GNinja --graphviz=processornode.dot ..
+dot -Tpng -oprocessornode.png processornode.dot
+```
+
+The result will be a png image file depicting the components of the software with dependency information:
+
+![ProcessorNode dependencies](processornode.png "ProcessorNode dependencies)
 
 
 ## Who do I talk to?
