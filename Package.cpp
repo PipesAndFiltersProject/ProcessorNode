@@ -23,6 +23,7 @@ namespace OHARBase {
    const std::string Package::controlStr = "control";
    const std::string Package::dataStr = "data";
    const std::string Package::configurationStr = "configuration";
+   const std::string Package::acknowledgementStr = "acknowledgement";
    const std::string Package::emptyString = "";
    
    /** Default constructor for Package. Generates a random uuid for the Package. */
@@ -117,6 +118,9 @@ namespace OHARBase {
          case Configuration: {
             return configurationStr;
          }
+         case Acknowledgement: {
+            return acknowledgementStr;
+         }
          default: {
             return emptyString;
          }
@@ -134,6 +138,8 @@ namespace OHARBase {
          type = Package::Data;
       } else if (typeStr == Package::configurationStr) {
          type = Package::Configuration;
+      } else if (typeStr == Package::acknowledgementStr) {
+         type = Package::Acknowledgement;
       } else {
          type = Package::NoType;
       }
@@ -208,6 +214,40 @@ namespace OHARBase {
     @return Returns true if the package has an origin address. */
    bool Package::hasOrigin() const {
       return originAddress.length() > 0;
+   }
+
+   /** Gets the listening port of the origin of the package.
+    If the address is form host:port, returns the port. Otherwise the address must be the port number only.
+    If there is no address, empty string is returned to indicate no address/port is known.
+    @return The port number or an empty string.
+    */
+   std::string Package::getPackageOriginsListeningPort() const {
+      if (originAddress.length() > 0) {
+         std::vector<std::string> addressElements;
+         boost::split(addressElements, originAddress, boost::is_any_of(":"));
+         if (addressElements.size() == 2) {
+            return addressElements[1];
+         } else {
+            return originAddress;
+         }
+      }
+      return "";
+   }
+
+   /** Get the host part of the package sender's address. If not there, returns an empty string.
+    If the address is form host:port, returns the port. Otherwise the address must be the port number only.
+    If there is no address, empty string is returned to indicate no host is known.
+    @return The host address of the sender.
+    */
+   std::string Package::getPackageOriginsHost() const {
+      if (originAddress.length() > 0) {
+         std::vector<std::string> addressElements;
+         boost::split(addressElements, originAddress, boost::is_any_of(":"));
+         if (addressElements.size() == 2) {
+            return addressElements[0];
+         }
+      }
+      return "";
    }
 
    /** Sets the package's destination address.
@@ -294,6 +334,9 @@ namespace OHARBase {
       j = nlohmann::json{{"package", to_string(package.getUuid())}};
       j["type"] = package.getTypeAsString();
       j["payload"] = package.getPayloadString();
+      if (package.getPackageOriginsListeningPort().length() > 0) {
+         j["sender-listening-port"] = package.getPackageOriginsListeningPort();
+      }
    }
    
    /**
@@ -313,6 +356,9 @@ namespace OHARBase {
       }
       if (j.find("payload") != j.end()) {
          package.setPayload(j["payload"].get<std::string>());
+      }
+      if (j.find("sender-listening-port") != j.end()) {
+         package.setOrigin(j["sender-listening-port"].get<std::string>());
       }
    }
    

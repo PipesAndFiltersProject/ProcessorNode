@@ -42,7 +42,8 @@ namespace OHARBase {
          NoType,   /*!< The package has no type (yet); it is uninitialized. */
          Control,  /*!< The package contains a control message. */
          Data,      /*!< The package contains actual application specific data. */
-         Configuration /*!< The package contains node configuration data or commands. */
+         Configuration, /*!< The package contains node configuration data or commands. */
+         Acknowledgement /*!< The package contains an acknowledgement message from next node. */
       };
       
       Package();
@@ -67,6 +68,9 @@ namespace OHARBase {
       const std::string & origin() const;
       bool hasOrigin() const;
 
+      std::string getPackageOriginsListeningPort() const;
+      std::string getPackageOriginsHost() const;
+      
       void setDestination(const std::string & d);
       const std::string & destination() const;
       bool hasDestination() const;
@@ -117,6 +121,8 @@ namespace OHARBase {
       static const std::string dataStr;
       /** Textual representation of the package type Package::Configuration. */
       static const std::string configurationStr;
+      /** Textual representation of the package type Package::Acknowledgement. */
+      static const std::string acknowledgementStr;
       /** Textual representation of the package type Package:NoType. */
       static const std::string emptyString;
    };

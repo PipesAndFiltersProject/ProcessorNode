@@ -16,10 +16,13 @@
 
 #include <ProcessorNode/NetworkWriter.h>
 
+//TODO handle periodically those packages from sentpackages which have no ack received from next node.
+
 
 namespace OHARBase {
 
 const std::string NetworkWriter::TAG{"NetWriter "};
+static const std::chrono::seconds RESEND_PACKAGE_TIMEOUT{10};
 
 /**
  Constructor to create the writer with host name. See the
@@ -28,8 +31,9 @@ const std::string NetworkWriter::TAG{"NetWriter "};
  @param io_s The boost asio io service.
  */
 NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_service & io_s)
-: Networker(hostName,io_s), threader(nullptr)
+: Networker(hostName,io_s), threader(nullptr), acknowledgePackages(false)
 {
+   lastTimeResendWasChecked = std::chrono::system_clock::now();
 }
 
 /**
@@ -40,8 +44,9 @@ NetworkWriter::NetworkWriter(const std::string & hostName, boost::asio::io_servi
  @param io_s The boost asio io service.
  */
 NetworkWriter::NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s)
-: Networker(hostName, portNumber, io_s), threader(nullptr)
+: Networker(hostName, portNumber, io_s), threader(nullptr), acknowledgePackages(false)
 {
+   lastTimeResendWasChecked = std::chrono::system_clock::now();
 }
 
 NetworkWriter::~NetworkWriter()
@@ -78,73 +83,122 @@ void NetworkWriter::threadFunc() {
       LOG(INFO) << TAG << "Starting the write loop.";
       while (running) {
          guard.lock();
+         Package package;
          if (!msgQueue.empty()) {
-            LOG(INFO) << TAG << "Stuff in send queue! Reading Package";
-            Package p = msgQueue.front();
-            LOG(INFO) << TAG << "Package read. Now convert to json...";
-            nlohmann::json j = p;
-            currentlySending = j.dump();
-            
-            LOG(INFO) << TAG << "Sending: " << currentlySending;
+            package = msgQueue.front();
             msgQueue.pop();
-            LOG(INFO) << TAG << "Just popped, next unlock";
-            guard.unlock();
-            
-            std::string tmpHost;
-            int tmpPort;
-            // If package has destination address, use it instead of node's configured destination address.
-            tmpHost = host;
-            tmpPort = port;
-            if (p.hasDestination()) {
-               LOG(INFO) << "Package specific destination exists.";
-               std::vector<std::string> strs;
-               boost::split(strs, p.destination(), boost::is_any_of(":"));
-               if (strs.size() == 2) {
-                  tmpHost = strs.at(0);
-                  tmpPort = std::stoi(strs.at(1));
+         }
+         guard.unlock();
+         if (!package.isEmpty()) {
+            LOG(INFO) << TAG << "Read package from send queue!";
+            // If packages are ack'ed and this is those packages, and arrived from outside this
+            // Node (the package has no destination), it is an ack package to this Node.
+            if (acknowledgePackages && package.getType() == Package::Type::Acknowledgement
+                && !package.hasDestination()) {
+               LOG(INFO) << "ackhandling: ack from " << package.origin();
+               handleAcknowledgementMessages(package);
+            } else {
+               // Otherwise, package is sent away.
+               LOG(INFO) << TAG << "Package read. Now convert to json...";
+               nlohmann::json j = package;
+               currentlySending = j.dump();
+               
+               LOG(INFO) << TAG << "Sending: " << currentlySending;
+               if (package.getType() == Package::Data) {
+                  sentPackages.push_back(package);
                }
+
+               std::string tmpHost;
+               int tmpPort;
+               // If package has destination address, use it instead of node's configured destination address.
+               tmpHost = host;
+               tmpPort = port;
+               if (package.hasDestination()) {
+                  LOG(INFO) << "Package specific destination exists.";
+                  std::vector<std::string> strs;
+                  boost::split(strs, package.destination(), boost::is_any_of(":"));
+                  if (strs.size() == 2) {
+                     tmpHost = strs.at(0);
+                     tmpPort = std::stoi(strs.at(1));
+                  }
+               }
+               LOG(INFO) << TAG << "Destination address is " << tmpHost << ":" << tmpPort;
+               LOG(INFO) << TAG << "Creating message...";
+               boost::shared_ptr<std::string> message(new std::string(currentlySending));
+               boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(tmpHost), tmpPort);
+               LOG(INFO) << TAG << "Now sending to address " << destination.address().to_string() << ":" << destination.port();
+               // Add the packge to sent messages, to be removed when ack is received from next Node.
+               socket.async_send_to(boost::asio::buffer(*message), destination,
+                                    boost::bind(&NetworkWriter::handleSend, this,
+                                                boost::asio::placeholders::error,
+                                                boost::asio::placeholders::bytes_transferred));
+               lastTimeResendWasChecked = std::chrono::system_clock::now();
+               LOG(INFO) << TAG << "Async send delivered";
             }
-            LOG(INFO) << TAG << "Destination address is " << tmpHost << ":" << tmpPort;
             
-            
-            // TODO: Try to resolve the output address if specified as host name
-//            boost::asio::ip::udp::endpoint destination;
-//            boost::asio::ip::udp::resolver resolver(socket.get_executor());
-//            resolver.async_resolve({tmpHost, tmpPort},
-//                                   io_strand.wrap([this](const boost::system::error_code& ec,
-//                                                         boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-//                                                  {
-//               if (!ec)
-//               {
-//                  std::for_each(endpoint_iterator, {}, [this](auto& it) {
-//                     destination.address(it.endpoint().address(), tmpPort);
-//                  });
-//               }
-//               else
-//               {
-//                  //ec.message()?
-//               }
-//            }));
-            
-            
-            LOG(INFO) << TAG << "Creating message...";
-            boost::shared_ptr<std::string> message(new std::string(currentlySending));
-            boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(tmpHost), tmpPort);
-            LOG(INFO) << TAG << "Now sending to address " << destination.address().to_string() << ":" << destination.port();
-            socket.async_send_to(boost::asio::buffer(*message), destination,
-                                 boost::bind(&NetworkWriter::handleSend, this,
-                                             boost::asio::placeholders::error,
-                                             boost::asio::placeholders::bytes_transferred));
-            LOG(INFO) << TAG << "Async send delivered";
          } else {
-            guard.unlock();
             LOG(INFO) << TAG << "Send queue empty, waiting...";
             std::unique_lock<std::mutex> ulock(guard);
             condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
+            if (timeToCheckPackagesToResend()) {
+               handlePackagesNotAcknowledgedUntilTimeout();
+            }
          }
       }
-      LOG(INFO) << TAG << "Shutting down the network writer thread.";
+//      LOG(INFO) << TAG << "Shutting down the network writer thread.";
    }
+}
+
+/** Handles the ack messsage packages from previous node. Finds the sent message
+ from the sentPackages queue and if found, and package acknowledged, removes it.
+ @param package The package to find and erase. Package must be an ack/nack package.
+ */
+void NetworkWriter::handleAcknowledgementMessages(const Package & package) {
+   LOG(INFO) << "ackhandling: checking if ack message relates to sent message in sent container";
+   bool packageFound = false;
+   for (std::vector<Package>::iterator iter = sentPackages.begin();
+        iter < sentPackages.end(); iter++) {
+      if (*iter == package) {
+         packageFound = true;
+         if (package.getPayloadString() == "ack") {
+            sentPackages.erase(iter);
+            LOG(INFO) << "ackhandling: sent package removed due to ack received.";
+            break;
+         } else {
+            LOG(INFO) << "ackhandling: ack is " << package.getPayloadString() << " so not acked nor removed from sent.";
+            break;
+         }
+      }
+   }
+   if (!packageFound) {
+      LOG(INFO) << "ackhandling: package ack'ed was not found in sent packages!";
+   }
+}
+
+bool NetworkWriter::timeToCheckPackagesToResend() {
+   if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() -    lastTimeResendWasChecked) > RESEND_PACKAGE_TIMEOUT) {
+      LOG(INFO) << "ackhandling:  it is time to check if packages should be resent";
+      return true;
+   }
+   LOG(INFO) << "ackhandling: not yet time to check if packages should be resent";
+   return false;
+}
+
+/** Goes through all the sent packages and resends them by moving them into the msgQueue. */
+void NetworkWriter::handlePackagesNotAcknowledgedUntilTimeout() {
+   if (sentPackages.size() > 0) {
+      LOG(INFO) << "ackhandling:  has " << sentPackages.size() << " packages not ack'ed to send, moving to send queue.";
+      guard.lock();
+      for (const Package & package : sentPackages) {
+         msgQueue.push(package);
+      }
+      sentPackages.clear();
+      guard.unlock();
+      condition.notify_one();
+   } else {
+      LOG(INFO) << "ackhandling: no packages in sent container.";
+   }
+   lastTimeResendWasChecked = std::chrono::system_clock::now();
 }
 
 /** This method is called when the boost async send finishes.
@@ -165,10 +219,8 @@ void NetworkWriter::handleSend(const boost::system::error_code& error,
  Basically starting the writer starts the thread which is waiting for
  notification of data put in the send queue by somebody (calling write()).
  */
-void NetworkWriter::start() {
-   // Create and run in thread...
-   // Set up the socket
-   // start working
+void NetworkWriter::start(bool useAcknowledgements) {
+   acknowledgePackages = useAcknowledgements;
    if (!running) {
       LOG(INFO) << TAG << "Starting NetworkWriter.";
       socket.open(boost::asio::ip::udp::v4());
@@ -180,10 +232,13 @@ void NetworkWriter::start() {
 void NetworkWriter::stop() {
    LOG(INFO) << TAG << "Beginning NetworkWriter::stop.";
    if (running) {
+      LOG(INFO) << "METRICS packages in outgoing queue: " << msgQueue.size();
+      LOG(INFO) << "METRICS packages in not acked sent queue: " << sentPackages.size();
       running = false;
       while (!msgQueue.empty()) {
          msgQueue.pop();
       }
+      sentPackages.clear();
       socket.cancel();
       socket.close();
       condition.notify_all();
@@ -208,8 +263,9 @@ void NetworkWriter::write(const Package & data)
       LOG(INFO) << TAG << "Putting data to networkwriter's message queue.";
       guard.lock();
       msgQueue.push(data);
-      LOG(INFO) << "METRICS packages in outgoing queue: " << msgQueue.size();
       guard.unlock();
+      LOG(INFO) << "METRICS packages in outgoing queue: " << msgQueue.size();
+      LOG(INFO) << "METRICS packages in not acked sent queue: " << sentPackages.size();
       // Notify the writer thread there's something to send.
       condition.notify_one();
    }

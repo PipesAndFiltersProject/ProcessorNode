@@ -42,7 +42,7 @@ namespace OHARBase {
 		 Starts the writing or reading networker, depending on the subclass implementation.
 		 Note that here this is an abstract method.
 		 */
-		virtual void start() = 0;
+		virtual void start(bool useAcknowledgements) = 0;
 		/**
 		 Stops the writing or reading networker, depending on the subclass implementation.
 		 Note that here this is an abstract method.

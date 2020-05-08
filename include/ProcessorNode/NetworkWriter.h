@@ -30,7 +30,7 @@ namespace OHARBase {
 		NetworkWriter(const std::string & hostName, int portNumber, boost::asio::io_service & io_s);
 		~NetworkWriter();
 		
-		virtual void start() override;
+		virtual void start(bool useAcknowledgements) override;
 		virtual void stop() override;
 		
 		void write(const Package & data);
@@ -44,6 +44,11 @@ namespace OHARBase {
 		
 		void handleSend(const boost::system::error_code& error,
 							 std::size_t bytes_transferred);
+      
+      void handleAcknowledgementMessages(const Package & package);
+      void handlePackagesNotAcknowledgedUntilTimeout();
+      bool timeToCheckPackagesToResend();
+      
 	private:
 		
       /** Has the resolved endpoint to use for sending data. */
@@ -57,7 +62,14 @@ namespace OHARBase {
 		std::thread * threader;
 		/** Logging tag. */
 		static const std::string TAG;
-		
+      
+      // Acknowledgements
+      /** Create acknowledgement messages for packages if true. */
+      bool acknowledgePackages;
+      /** A container for sent messages. Removed from here when ack is received from the next Node. */
+      std::vector<Package> sentPackages;
+      /** Time since the last time sent messages were resent if not acknowledged. */
+      std::chrono::system_clock::time_point lastTimeResendWasChecked;
 	};
 	
 }

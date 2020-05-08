@@ -26,7 +26,7 @@ namespace OHARBase {
 		NetworkReader(int port, NetworkReaderObserver & obs, boost::asio::io_service & io_s, bool reuseAddress = false);
 		~NetworkReader();
 		
-		virtual void start() override;
+		virtual void start(bool useAcknowledgements) override;
 		virtual void stop() override;
 		
 		Package read();
@@ -57,6 +57,8 @@ namespace OHARBase {
 		/** Tag for logging. */
 		static const std::string TAG;
 		
+      /** Send ack messages for packages received or not. */
+      bool sendAckMessages;
 	};
 	
 	

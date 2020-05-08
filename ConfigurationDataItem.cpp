@@ -42,6 +42,9 @@ const std::string ConfigurationDataItem::CONF_OUTPUTFILE{"fileout"};
 const std::string ConfigurationDataItem::CONF_NODENAME{"name"};
 /** Configuration data item name for using encryption and the method of it.*/
 const std::string ConfigurationDataItem::CONF_ENCRYPT{"encrypt"};
+/** Configuration data item name for specifying if ack messages are sent to previous node about arriving data packages.*/
+const std::string ConfigurationDataItem::CONF_USE_ACK{"use-ack"};
+
 /**
  Sets the configuration data item name.
  @param item The configuration item name.

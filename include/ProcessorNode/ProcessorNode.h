@@ -138,7 +138,7 @@ namespace OHARBase {
       virtual void receivedData() override;
       virtual void errorInData(const std::string & what) override;
       
-      void sendData(const Package & data);
+      void sendData(Package & data);
       
       void passToHandlers(Package & package);
       
@@ -166,6 +166,8 @@ namespace OHARBase {
       void initiateClientAppShutdown();
       
       void handlePackagesFrom(NetworkReader & reader);
+      
+      std::string listeningPort() const;
       
    protected:
       

@@ -342,27 +342,31 @@ void ProcessorNode::start() {
    if (running) return;
    
    nodeInitiatedShutdownStarted = false;
-   
+   std::string cvalue = config->getValue(ConfigurationDataItem::CONF_USE_ACK);
+   bool useAck = false;
+   if ((cvalue != "no" || cvalue != "off") && cvalue.length() > 0) {
+      useAck = true;
+   }
    try {
       running = true;
       // Start the listening network reader
       showUIMessage("------ > Starting the node " + config->getValue(ConfigurationDataItem::CONF_NODENAME));
       if (networkReader) {
          LOG(INFO) << TAG << "Start the input reader";
-         networkReader->start();
+         networkReader->start(useAck);
       }
       if (configReader) {
          LOG(INFO) << "Start the configuration reader";
-         configReader->start();
+         configReader->start(useAck);
       }
       if (configWriter) {
          LOG(INFO) << "Start the config writer.";
-         configWriter->start();
+         configWriter->start(useAck);
       }
       // Start the sending network object
       if (networkWriter) {
          LOG(INFO) << TAG << "Start the output writer";
-         networkWriter->start();
+         networkWriter->start(useAck);
       }
       if (networkReader || configReader) {
          LOG(INFO) << TAG << "Start the network receive handler thread...";
@@ -554,24 +558,39 @@ void ProcessorNode::handleCommand(const std::string & aCommand) {
    LOG(INFO) << "Received a command " << command;
    condition.notify_all();
    // Update send queue status here too since writer does not notify Node when sending has been done.
+   int packagesInQueue = 0;
    if (networkWriter) {
-      updatePackageCountInQueue("net-out", networkWriter->packagesInQueue());
+      packagesInQueue = networkWriter->packagesInQueue();
+   } else if (configWriter) {
+      packagesInQueue = configWriter->packagesInQueue();
    }
+   updatePackageCountInQueue("net-out", packagesInQueue);
 }
 
 /** Method sends the data to the next node by using the NetworkWriter object.
  @param data The data package to send to the next Node. */
-void ProcessorNode::sendData(const Package & data) {
+void ProcessorNode::sendData(Package & data) {
+   // Need to set the origin of the package before sending it.
+   // The origin is the listening port of the Node. Receiver will get the ip address of
+   // the sender host and add that to the origin port number from the JSON.
+//   if (!data.hasOrigin()) {
+   data.setOrigin(listeningPort());
+//   }
    if (networkWriter) {
-      showUIMessage("Sending a package of type " + data.getTypeAsString());
-      LOG(INFO) << TAG << "Telling network writer to send a package.";
+      showUIMessage("Output handling a package of type " + data.getTypeAsString());
+      LOG(INFO) << TAG << "Telling network writer to handle a package.";
       networkWriter->write(data);
       updatePackageCountInQueue("net-out", networkWriter->packagesInQueue());
    // If node hasn't got the next node, it uses the config writer to send config packages (only).
-   } else if (configWriter && data.getType() == Package::Configuration) {
-      showUIMessage("Sending configuration response message to Configurator.");
-      LOG(INFO) << "No networkWriter so using configWriter to send a response to Configurator";
-      configWriter->write(data);
+   } else if (configWriter) {
+      if (data.getType() == Package::Configuration) {
+         showUIMessage("Sending configuration response message to Configurator.");
+         LOG(INFO) << "No networkWriter so using configWriter to send a response to Configurator";
+         configWriter->write(data);
+      } else if (data.getType() == Package::Acknowledgement) {
+         logAndShowUIMessage("ackhandling: Handling ack message about data packages.");
+         configWriter->write(data);
+      }
    }
 }
 
@@ -615,6 +634,7 @@ void ProcessorNode::threadFunc() {
       }
       // OK, something happened so if we are still running, check if something came from the network.
       if (running && hasIncoming) {
+         LOG(INFO) << "Incoming handler thread starts to handle incoming packages.";
          if (configReader) {
             handlePackagesFrom(*configReader);
          }
@@ -632,9 +652,8 @@ void ProcessorNode::handlePackagesFrom(NetworkReader & reader) {
    Package package = reader.read();
    // If package is empty, nothing came.
    while (!package.isEmpty() && running) {
-      LOG(INFO) << TAG << "Received a package!";
-      showUIMessage("Received a package.");
-      LOG(INFO) << TAG << "Received package: " << boost::uuids::to_string(package.getUuid()) << " " << package.getTypeAsString() << ":" << package.getPayloadString();
+      showUIMessage("Handling a package.");
+      LOG(INFO) << TAG << "Handling a package: " << boost::uuids::to_string(package.getUuid()) << " " << package.getTypeAsString() << ":" << package.getPayloadString();
       if (package.getType() == Package::Control && package.getPayloadString() == "shutdown") {
          showUIMessage("Got shutdown command, forwarding and initiating shutdown.");
          sendData(package);
@@ -645,6 +664,11 @@ void ProcessorNode::handlePackagesFrom(NetworkReader & reader) {
          condition.notify_all();
          // Do not handle possible remaining packages after shutdown message.
          break;
+      } else if (package.getType() == Package::Acknowledgement) {
+         // No need to give ack messages to handlers, just send them to the node who sent the original Package.
+         LOG(INFO) << "ackhandling: Node received ack msg, passing to networkwriter";
+         sendData(package);
+         package = reader.read();
       } else {
          if (package.getType() == Package::Control) {
             queuePackageCounts.clear();
@@ -656,6 +680,20 @@ void ProcessorNode::handlePackagesFrom(NetworkReader & reader) {
          package = reader.read();
       }
    }
+}
+
+
+std::string ProcessorNode::listeningPort() const {
+   int port = -1;
+   if (networkReader) {
+      port = networkReader->getPort();
+   } else if (configReader) {
+      port = configReader->getPort();
+   }
+   if (port >= 0) {
+      return std::to_string(port);
+   }
+   return "";
 }
 
 /** This method takes the incoming data and passes it to be handled by the

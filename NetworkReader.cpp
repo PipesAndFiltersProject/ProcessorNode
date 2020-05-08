@@ -42,9 +42,10 @@ namespace OHARBase {
    
    
    /** Starts the reader. Open the socket for reading data from the specified port. */
-   void NetworkReader::start() {
+   void NetworkReader::start(bool useAcknowledgements) {
       LOG(INFO) << TAG << "Start reading for data from port: " << port;
       running = true;
+      sendAckMessages = useAcknowledgements;
       
       buffer->fill(0);
 
@@ -91,10 +92,26 @@ namespace OHARBase {
                   nlohmann::json j = nlohmann::json::parse(buf);
                   Package p = j.get<OHARBase::Package>();
                   std::stringstream stream;
-                  stream << remote_endpoint.address() << ":" << remote_endpoint.port();
+                  stream << remote_endpoint.address() << ":";
+                  std::string port = p.getPackageOriginsListeningPort();
+                  if (port.length() > 0) {
+                     stream << port;
+                  } else {
+                     stream << remote_endpoint.port();
+                  }
                   p.setOrigin(stream.str());
+                  LOG(INFO) << "Received package from origin " << p.origin();
                   guard.lock();
                   msgQueue.push(p);
+                  if (sendAckMessages && p.getType() == Package::Data) {
+                     Package ackMessage;
+                     ackMessage.setType(Package::Type::Acknowledgement);
+                     ackMessage.setPayload("ack");
+                     ackMessage.setDestination(p.origin());
+                     ackMessage.setUuid(p.getUuid());
+                     LOG(INFO) << "ackhandling: prepared an ack message to " << ackMessage.destination();
+                     msgQueue.push(ackMessage);
+                  }
                   guard.unlock();
                   // And when data has been received, notify the observer.
                   observer.receivedData();
