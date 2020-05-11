@@ -138,8 +138,10 @@ void NetworkWriter::threadFunc() {
             
          } else {
             LOG(INFO) << TAG << "Send queue empty, waiting...";
-            std::unique_lock<std::mutex> ulock(guard);
-            condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
+            {
+               std::unique_lock<std::mutex> ulock(guard);
+               condition.wait(ulock, [this] {return !msgQueue.empty() || !running; } );
+            }
             if (timeToCheckPackagesToResend()) {
                handlePackagesNotAcknowledgedUntilTimeout();
             }
@@ -176,7 +178,7 @@ void NetworkWriter::handleAcknowledgementMessages(const Package & package) {
 }
 
 bool NetworkWriter::timeToCheckPackagesToResend() {
-   if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() -    lastTimeResendWasChecked) > RESEND_PACKAGE_TIMEOUT) {
+   if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - lastTimeResendWasChecked) > RESEND_PACKAGE_TIMEOUT) {
       LOG(INFO) << "ackhandling:  it is time to check if packages should be resent";
       return true;
    }
@@ -189,12 +191,13 @@ void NetworkWriter::handlePackagesNotAcknowledgedUntilTimeout() {
    if (sentPackages.size() > 0) {
       LOG(INFO) << "ackhandling:  has " << sentPackages.size() << " packages not ack'ed to send, moving to send queue.";
       guard.lock();
-      for (const Package & package : sentPackages) {
+      for (Package & package : sentPackages) {
          msgQueue.push(package);
       }
-      sentPackages.clear();
       guard.unlock();
-      condition.notify_one();
+      sentPackages.clear();
+      LOG(INFO) << "ackhandling: moved sent packages not ack'ed to send queue.";
+      //condition.notify_one();
    } else {
       LOG(INFO) << "ackhandling: no packages in sent container.";
    }

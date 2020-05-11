@@ -57,7 +57,9 @@ namespace OHARBase {
       if (doReuseAddress) {
          socket.set_option(boost::asio::ip::udp::socket::reuse_address(true));
       }
-      socket.bind(remote_endpoint);
+      boost::system::error_code ec;
+      socket.bind(remote_endpoint, ec);
+      LOG(INFO) << TAG << "Bind code: " << ec;
       readSocket();
    }
 
