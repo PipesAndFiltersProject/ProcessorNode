@@ -1,8 +1,6 @@
 # ProcessorNode
 
-**Contents**
-
-[TOC]
+This library is part of a educational project aiming at teaching software architectures.
 
 ## Introduction
 
@@ -176,7 +174,7 @@ The basic usage of ProcessorNode is as follows:
     * see `DataHandler` and extensions of it from DirWatcher as examples, 
 5. Calling ProcessorNode's `start()` to begin processing incoming/outgoing data packages according to application specific implementation.
 
-An example app build on top of ProcessorNode can be found in the [DirWatcher](https://bitbucket.org/anttijuu/dirwatcher) project. It follows the fan-in style of architecture explained above so that there is one last Node receiving packages from leaf Nodes (no intermediate Nodes in between). DirWatcher does not support remote configuration currently.
+An example app build on top of ProcessorNode can be found in the [DirWatcher](https://github.com/PipesAndFiltersProject/DirWatcher) project. It follows the fan-in style of architecture explained above so that there is one last Node receiving packages from leaf Nodes (no intermediate Nodes in between). DirWatcher does not support remote configuration currently.
 
 ```
 LeafNode ---\ 
