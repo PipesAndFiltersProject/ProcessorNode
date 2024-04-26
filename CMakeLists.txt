@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 find_package(Boost 1.70.0 REQUIRED COMPONENTS system)
-find_package(g3logger REQUIRED)
+find_package(g3log CONFIG REQUIRED)
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
 # Add a "doc" target to generate API documentation with Doxygen.
@@ -19,7 +19,7 @@ find_package(nlohmann_json 3.2.0 REQUIRED)
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/doxyfile @ONLY)
-   add_custom_target(doc
+   add_custom_target(pn-doc
       ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM
@@ -50,7 +50,7 @@ if (WIN32)
     add_definitions(-DBOOST_UUID_RANDOM_PROVIDER_FORCE_WINCRYPT)
 endif(WIN32)
 
-if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
+if (Boost_FOUND AND g3log_FOUND AND nlohmann_json_FOUND)
    add_library(${LIB_NAME} STATIC ConfigurationDataItem.cpp DataItem.cpp Networker.cpp 
        ProcessorNode.cpp ConfigurationFileReader.cpp NodeConfiguration.cpp DataFileReader.cpp
        NetworkReader.cpp Package.cpp DataHandler.cpp NetworkWriter.cpp PingHandler.cpp ConfigurationHandler.cpp  EncryptHandler.cpp
@@ -63,9 +63,9 @@ if (Boost_FOUND AND g3logger_FOUND AND nlohmann_json_FOUND)
 
    set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
    set_target_properties(${LIB_NAME} PROPERTIES CXX_STANDARD 17)
-   target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/> $<INSTALL_INTERFACE:include/${LIB_NAME}> ${Boost_INCLUDE_DIRS} ${G3LOGGER_INCLUDE_DIRS})
+   target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/> $<INSTALL_INTERFACE:include/${LIB_NAME}> ${Boost_INCLUDE_DIRS} ${G3LOG_INCLUDE_DIRS})
 
-   target_link_libraries(${LIB_NAME} PUBLIC Boost::system g3logger nlohmann_json::nlohmann_json)
+   target_link_libraries(${LIB_NAME} PUBLIC Boost::system g3log nlohmann_json::nlohmann_json)
 
    set_target_properties(${LIB_NAME} PROPERTIES PUBLIC_HEADER "include/${LIB_NAME}/ConfigurationDataItem.h;include/${LIB_NAME}/DataReaderObserver.h;include/${LIB_NAME}/Networker.h;include/${LIB_NAME}/ConfigurationFileReader.h;include/${LIB_NAME}/NodeConfiguration.h;include/${LIB_NAME}/DataFileReader.h;include/${LIB_NAME}/NetworkReader.h;include/${LIB_NAME}/Package.h;include/${LIB_NAME}/DataHandler.h;include/${LIB_NAME}/NetworkReaderObserver.h;include/${LIB_NAME}/PingHandler.h;include/${LIB_NAME}/DataItem.h;include/${LIB_NAME}/NetworkWriter.h;include/${LIB_NAME}/ProcessorNode.h;include/${LIB_NAME}/ProcessorNodeObserver.h;include/${LIB_NAME}/ConfigurationHandler.h;include/${LIB_NAME}/EncryptHandler.h")
 

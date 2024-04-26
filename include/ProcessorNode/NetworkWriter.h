@@ -45,6 +45,7 @@ namespace OHARBase {
 		void handleSend(const boost::system::error_code& error,
 							 std::size_t bytes_transferred);
       
+		void handlePackage(const Package & package);
       void handleAcknowledgementMessages(const Package & package);
       void handlePackagesNotAcknowledgedUntilTimeout();
       bool timeToCheckPackagesToResend();
