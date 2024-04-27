@@ -209,7 +209,7 @@ dot -Tpng -oprocessornode.png processornode.dot
 
 The result will be a png image file depicting the components of the software with dependency information:
 
-![ProcessorNode dependencies](processornode.png "ProcessorNode dependencies)
+![ProcessorNode dependencies](processornode.png)
 
 
 ## Who do I talk to?
